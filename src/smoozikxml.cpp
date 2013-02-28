@@ -30,7 +30,7 @@ bool SmoozikXml::parse(const QDomElement &dataElement) {
     cleanError();
     clear();
 
-    return parseElement(this, dataElement);
+    return parseElement(dataElement, this);
 }
 
 bool SmoozikXml::parse(QNetworkReply *reply) {
@@ -108,7 +108,7 @@ QString SmoozikXml::print() {
     return "{\n" + printMap(this, 1) + "}\n";
 }
 
-bool SmoozikXml::parseElement(QVariantMap *map, const QDomElement &element) {
+bool SmoozikXml::parseElement(const QDomElement &element, QVariantMap *map) {
 
     //Check if element is an array or an object
     bool array = false;
@@ -127,7 +127,7 @@ bool SmoozikXml::parseElement(QVariantMap *map, const QDomElement &element) {
 
                 QVariantMap cmap;
 
-                if (!parseElement(&cmap, e)) {
+                if (!parseElement(e, &cmap)) {
                     return false;
                 }
 

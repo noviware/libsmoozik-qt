@@ -60,7 +60,7 @@ public:
 
     /**
      * @brief Parses a QDomElement data.
-     * @param data a QDomElement
+     * @param dataElement a QDomElement
      * @retval true if parsing succeeded. Data is accessible with operator [].
      * @retval false if parsing failed. Error is accessible with error().
      */
@@ -86,17 +86,17 @@ private:
     SmoozikManager::Error _error; /**< @see #error */
     QString _errorMsg; /**< @see #errorMsg */
     /**
-     * @brief Parses a Dom element and add it to the QMap pointed by #_parsingPointer.
+     * @brief Parses a Dom element and add it to the map.
      *
      * This function is used recursively by parse().
      * @param map The map to which the element should be added
      * @param element DomElement to parse
      * @retval true if parsing succeed.
      */
-    bool parseElement(QVariantMap *map, const QDomElement &element);
+    bool parseElement(const QDomElement &element, QVariantMap *map);
 
     /**
-     * @brief Returns a structured string of #map.
+     * @brief Returns a structured string of map.
      *
      * This function is used recursively by print().
      * @param map The QMap to print.
