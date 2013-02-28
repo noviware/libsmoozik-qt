@@ -35,11 +35,12 @@
 #else
 #include <QUrlQuery>
 #endif
+#include "global.h"
 
 /**
  * @brief The SmoozikManager class is a Network Access Manager designed to send request to Smoozik server.
  */
-class SmoozikManager : public QNetworkAccessManager {
+class SMOOZIKLIB_EXPORT SmoozikManager : public QNetworkAccessManager {
 
     Q_OBJECT
     /**
@@ -124,7 +125,7 @@ public:
         SubscriptionOver = 19, /**< Your subscription is over */
         CannotParseSentData = 20 /**< Cannot parse sent data */
     };
-    explicit SmoozikManager(const QString &apiKey, QObject *parent = 0, const QString &secret = "", const Format &format = XML, bool blocking = true);
+    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, QObject *parent = 0, const QString &secret = "", const Format &format = XML, bool blocking = true);
 
     inline QString apiKey() const {
         return _apiKey;
@@ -175,14 +176,14 @@ public:
      *
      * @rights Managers only
      */
-    QNetworkReply *login(const QString &username, const QString &password);
+    SMOOZIKLIB_EXPORT QNetworkReply *login(const QString &username, const QString &password);
 
     /**
      * @brief Starts a party
      *
      * @rights Managers only
      */
-    QNetworkReply *startParty();
+    SMOOZIKLIB_EXPORT QNetworkReply *startParty();
 
     /**
      * @brief Retrieves top tracks for the party
@@ -190,7 +191,7 @@ public:
      * @param retrieved Offset
      * @rights Managers only
      */
-    QNetworkReply *getTopTracks(int retrieve = 10, int retrieved = 0);
+    SMOOZIKLIB_EXPORT QNetworkReply *getTopTracks(int retrieve = 10, int retrieved = 0);
 
     /**
      * @brief Sets a track for the party
@@ -204,14 +205,14 @@ public:
      * @param albumName Name of the album of the track
      * @rights Managers only
      */
-    QNetworkReply *setTrack(const QString &localId, int position = 0, bool actual = true, const QString &name = "", const QString &artistName = "", const QString &albumName = "");
+    SMOOZIKLIB_EXPORT QNetworkReply *setTrack(const QString &localId, int position = 0, bool actual = true, const QString &name = "", const QString &artistName = "", const QString &albumName = "");
 
     /**
      * @brief Sends the playlist
      * @param data Playlist in XML format. The structure should respect standards defined in Smoozik API specification.
      * @rights Managers only
      */
-    QNetworkReply *sendPlaylist(const QString &data);
+    SMOOZIKLIB_EXPORT QNetworkReply *sendPlaylist(const QString &data);
     //@}
 
     /**
@@ -221,7 +222,7 @@ public:
      * @param postParams Parameters sent through POST method
      * @return Reply of the server
      */
-    QNetworkReply *request(const QString &method, QMap<QString, QString> getParams = QMap<QString, QString>(), QMap<QString, QString> postParams = QMap<QString, QString>());
+    SMOOZIKLIB_EXPORT QNetworkReply *request(const QString &method, QMap<QString, QString> getParams = QMap<QString, QString>(), QMap<QString, QString> postParams = QMap<QString, QString>());
 
 private:
     QString _apiKey; /**< @see #apiKey */
@@ -235,7 +236,7 @@ signals:
      * @brief This signal is emitted when the request is finished.
      * @param reply The network reply
      */
-    void requestFinished(QNetworkReply *reply);
+    SMOOZIKLIB_EXPORT void requestFinished(QNetworkReply *reply);
 };
 
 #endif // SMOOZIKMANAGER_H

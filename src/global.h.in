@@ -21,9 +21,20 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#define USERNAME ""
-#define PASSWORD ""
+#include <QtCore/QtGlobal>
+
+#if defined(SMOOZIK_LIBRARY)
+#  define SMOOZIKLIB_EXPORT Q_DECL_EXPORT
+#else
+#  define SMOOZIKLIB_EXPORT Q_DECL_IMPORT
+#endif
+
+#define MANAGER_USERNAME ""
+#define MANAGER_PASSWORD ""
+#define MEMBER_USERNAME ""
+#define MEMBER_PASSWORD ""
 #define APIKEY ""
 #define SECRET ""
 
 #endif // GLOBAL_H
+

@@ -6,6 +6,7 @@ include(../common.pri)
 DESTDIR = $$SMOOZIKLIB_DIR
 CONFIG(release, debug|release): TARGET = qtsmoozik
 CONFIG(debug, debug|release): TARGET = qtsmoozikd
+DEFINES += SMOOZIK_LIBRARY
 
 VER_MAJ = 1
 VER_MIN = 0
@@ -14,7 +15,8 @@ VERSION = 1.0.0-PR1
 
 HEADERS += \
     smoozikmanager.h \
-    smoozikxml.h
+    smoozikxml.h \
+    global.h
 
 SOURCES += \
     smoozikmanager.cpp \

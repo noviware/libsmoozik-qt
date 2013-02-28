@@ -29,7 +29,7 @@
 /**
  * @brief The SmoozikXml class provides with functions to parse XML response from Smoozik webserver
  */
-class SmoozikXml : public QObject, public QVariantMap {
+class SMOOZIKLIB_EXPORT SmoozikXml : public QObject, public QVariantMap {
     /**
      * @brief This property holds the error encountered in last parse() call.
      *
@@ -48,7 +48,7 @@ class SmoozikXml : public QObject, public QVariantMap {
     Q_PROPERTY(QString errorMsg READ errorMsg)
     Q_OBJECT
 public:
-    explicit SmoozikXml(QObject *parent = 0);
+    SMOOZIKLIB_EXPORT explicit SmoozikXml(QObject *parent = 0);
 
     inline SmoozikManager::Error error() const {
         return _error;
@@ -64,7 +64,7 @@ public:
      * @retval true if parsing succeeded. Data is accessible with operator [].
      * @retval false if parsing failed. Error is accessible with error().
      */
-    bool parse(const QDomElement &dataElement);
+    SMOOZIKLIB_EXPORT bool parse(const QDomElement &dataElement);
 
     /**
      * @brief Parses response from Smoozik Server.
@@ -74,13 +74,13 @@ public:
      * @retval true if parsing succeeded. Data is accessible with operator [].
      * @retval false if parsing failed. Error is accessible with error().
      */
-    bool parse(QNetworkReply *reply);
+    SMOOZIKLIB_EXPORT bool parse(QNetworkReply *reply);
 
     /**
      * @brief Returns a structured string of the parsed xml to print.
      * @return A structured string
      */
-    QString print();
+    SMOOZIKLIB_EXPORT QString print();
 
 private:
     SmoozikManager::Error _error; /**< @see #error */

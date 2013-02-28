@@ -16,9 +16,11 @@ CONFIG(debug, debug|release) {
     win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.dll
 }
 
+#Tell the exe to look for shared library in SMOOZIKLIB_DIR
+unix:QMAKE_LFLAGS += -Wl,-R -Wl,$$SMOOZIKLIB_DIR
+
 HEADERS += \
-    testsmoozikmanager.h \
-    global.h
+    testsmoozikmanager.h
 
 SOURCES += \
     testsmoozikmanager.cpp

@@ -19,13 +19,12 @@
  */
 
 #include "testsmoozikmanager.h"
-#include "global.h"
 
 #include <QDomElement>
 
 void TestSmoozikManager::login() {
     SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
-    QNetworkReply *reply = manager->login(USERNAME, PASSWORD);
+    QNetworkReply *reply = manager->login(MANAGER_USERNAME, MANAGER_PASSWORD);
 
     SmoozikXml xml;
     QCOMPARE(xml.parse(reply), true);
