@@ -1,5 +1,5 @@
 TEMPLATE = lib
-QT += core network
+QT += core network xml
 CONFIG += qt dll
 mac:CONFIG += absolute_library_soname
 include(../common.pri)
@@ -13,7 +13,9 @@ VER_PAT = 0
 VERSION = 1.0.0-PR1
 
 HEADERS += \
-    smoozikmanager.h
+    smoozikmanager.h \
+    smoozikxml.h
 
 SOURCES += \
-    smoozikmanager.cpp
+    smoozikmanager.cpp \
+    smoozikxml.cpp
