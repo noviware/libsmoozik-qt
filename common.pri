@@ -1,0 +1,1 @@
+SMOOZIKLIB_DIR = $$PWD/lib
