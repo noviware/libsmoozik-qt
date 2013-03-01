@@ -24,17 +24,65 @@
 
 void TestSmoozikManager::login() {
     SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
-    QNetworkReply *reply = manager->login(MANAGER_USERNAME, MANAGER_PASSWORD);
-
     SmoozikXml xml;
-    QCOMPARE(xml.parse(reply), true);
-    qDebug()<<xml.print();
+    QNetworkReply *reply;
 
-    manager->setSessionKey(xml["sessionKey"].toString());
-    manager->startParty();
-    reply = manager->getTopTracks();
+    reply = manager->login("error", MANAGER_PASSWORD);
+    QCOMPARE(xml.parse(reply), false);
+    QCOMPARE(xml.error(), SmoozikManager::AuthenticationFailed);
+
+    reply = manager->login(MANAGER_USERNAME, "error");
+    QCOMPARE(xml.parse(reply), false);
+    QCOMPARE(xml.error(), SmoozikManager::AuthenticationFailed);
+
+    reply = manager->login(MANAGER_USERNAME, MANAGER_PASSWORD);
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["sessionKey"].isNull(), false);
+    QCOMPARE(xml["place"].isNull(), false);
+}
+
+void TestSmoozikManager::startParty()
+{
+    SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
+    SmoozikXml xml;
+    QNetworkReply *reply;
+
+    reply = manager->startParty();
+    QCOMPARE(xml.parse(reply), false);
+    QCOMPARE(xml.error(), SmoozikManager::AccessRestricted);
+
+    reply = manager->login(MANAGER_USERNAME, MANAGER_PASSWORD);
     xml.parse(reply);
-    qDebug()<<xml.print();
+    manager->setSessionKey(xml["sessionKey"].toString());
+    reply = manager->startParty();
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["party"].isNull(), false);
+}
+
+void TestSmoozikManager::getTopTracks()
+{
+    SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
+    SmoozikXml xml;
+    QNetworkReply *reply;
+
+    reply = manager->getTopTracks();
+    QCOMPARE(xml.parse(reply), false);
+    QCOMPARE(xml.error(), SmoozikManager::AccessRestricted);
+
+    reply = manager->login(MANAGER_USERNAME, MANAGER_PASSWORD);
+    xml.parse(reply);
+    manager->setSessionKey(xml["sessionKey"].toString());
+    reply = manager->getTopTracks();
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["tracks"].isNull(), false);
+
+    //Checks limit and offset
+    SmoozikXml xml2;
+    reply = manager->getTopTracks(3, 2);
+    xml2.parse(reply);
+    QCOMPARE(xml2["tracks"].toMap().count(), 3);
+    QCOMPARE(xml2["tracks"].toMap()["0"].toMap()["track"].toMap()["id"].isNull(), false);
+    QCOMPARE(xml2["tracks"].toMap()["0"].toMap()["track"].toMap()["id"], xml["tracks"].toMap()["2"].toMap()["track"].toMap()["id"]);
 }
 
 QTEST_MAIN(TestSmoozikManager)

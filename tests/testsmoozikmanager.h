@@ -29,6 +29,8 @@ class TestSmoozikManager : public QObject {
     Q_OBJECT
 private slots:
     void login();
+    void startParty();
+    void getTopTracks();
 };
 
 #endif // TESTSMOOZIKMANAGER_H
