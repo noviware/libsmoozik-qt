@@ -172,21 +172,21 @@ public:
      */
     //@{
     /**
-     * @brief Starts a party
+     * @brief Logs user in.
      *
      * @rights Managers only
      */
     SMOOZIKLIB_EXPORT QNetworkReply *login(const QString &username, const QString &password);
 
     /**
-     * @brief Starts a party
+     * @brief Starts a party.
      *
      * @rights Managers only
      */
     SMOOZIKLIB_EXPORT QNetworkReply *startParty();
 
     /**
-     * @brief Retrieves top tracks for the party
+     * @brief Retrieves top tracks for the party.
      * @param retrieve Max number of tracks to retrieve
      * @param retrieved Offset
      * @rights Managers only
@@ -194,7 +194,7 @@ public:
     SMOOZIKLIB_EXPORT QNetworkReply *getTopTracks(int retrieve = 10, int retrieved = 0);
 
     /**
-     * @brief Sets a track for the party
+     * @brief Sets a track for the party.
      *
      * If this track has already been sent (with setTrack() or sendPlaylist()), the localId is the only required field.
      * @param localId Id of the track in client local database
@@ -208,7 +208,7 @@ public:
     SMOOZIKLIB_EXPORT QNetworkReply *setTrack(const QString &localId, int position = 0, bool actual = true, const QString &name = "", const QString &artistName = "", const QString &albumName = "");
 
     /**
-     * @brief Sends the playlist
+     * @brief Sends the playlist.
      * @param data Playlist in XML format. The structure should respect standards defined in Smoozik API specification.
      * @rights Managers only
      */
