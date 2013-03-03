@@ -21,6 +21,25 @@
 #include "testsmoozikmanager.h"
 
 #include <QDomElement>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QJsonDocument>
+#endif
+
+void TestSmoozikManager::format() {
+    SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
+    QNetworkReply *reply = manager->login(MEMBER_USERNAME, MEMBER_PASSWORD);
+    QDomDocument xml;
+    QCOMPARE(xml.setContent(reply->readAll()), true);
+    manager->deleteLater();
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::JSON, true);
+    reply = manager->login(MEMBER_USERNAME, MEMBER_PASSWORD);
+    QByteArray jsonData = reply->readAll();
+    QJsonDocument json;
+    QCOMPARE(json.fromJson(jsonData).isEmpty(), false);
+#endif
+}
 
 void TestSmoozikManager::login_data() {
     QTest::addColumn<QString>("username");

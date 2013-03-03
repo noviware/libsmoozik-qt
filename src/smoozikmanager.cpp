@@ -79,8 +79,6 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
         case JSON:
             getParams.insert("format", "json");
             break;
-        default:
-            break;
     }
 
     //Add key
