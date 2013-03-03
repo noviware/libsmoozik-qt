@@ -16,6 +16,8 @@ Fork it: https://github.com/fabienpn/libsmoozik-qt
 libsmoozik-qt requires:
 
 * Qt 5.0 or Qt 4.8 http://qt.digia.com/
+* Doxygen http://www.stack.nl/~dimitri/doxygen/. Required if you want to generate the documentation from source code.
+* Gcov http://gcc.gnu.org/onlinedocs/gcc/Gcov.html. Gcov is used for code coverage. If you do not want to use it, be sure to comment it on common.pri
 
 # Using libsmoozik-qt
 
