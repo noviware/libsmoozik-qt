@@ -59,12 +59,10 @@ public:
     } /**< @see #errorMsg */
 
     /**
-     * @brief Parses a QDomElement data.
+     * @brief Parses a QDomElement data to fill SmoozikXml QMap.
      * @param dataElement a QDomElement
-     * @retval true if parsing succeeded. Data is accessible with operator [].
-     * @retval false if parsing failed. Error is accessible with error().
      */
-    SMOOZIKLIB_EXPORT bool parse(const QDomElement &dataElement);
+    SMOOZIKLIB_EXPORT void parse(const QDomElement &dataElement);
 
     /**
      * @brief Parses response from Smoozik Server.
@@ -90,10 +88,8 @@ private:
      *
      * This function is used recursively by parse().
      * @param map The map to which the element should be added
-     * @param element DomElement to parse
-     * @retval true if parsing succeed.
      */
-    bool parseElement(const QDomElement &element, QVariantMap *map);
+    void parseElement(const QDomElement &element, QVariantMap *map);
 
     /**
      * @brief Returns a structured string of map.

@@ -27,6 +27,8 @@
 class TestSmoozikXml : public QObject {
     Q_OBJECT
 private slots:
+    void serverUnreachable();
+    void parse_data();
     void parse();
 };
 

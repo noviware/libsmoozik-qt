@@ -20,7 +20,9 @@ CONFIG(debug, debug|release) {
 unix:QMAKE_LFLAGS += -Wl,-R -Wl,$$SMOOZIKLIB_DIR
 
 HEADERS += \
-    testsmoozikxml.h
+    testsmoozikxml.h \
+    simplehttpserver.h
 
 SOURCES += \
-    testsmoozikxml.cpp
+    testsmoozikxml.cpp \
+    simplehttpserver.cpp

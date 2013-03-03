@@ -26,11 +26,11 @@ QVariantMap() {
     cleanError();
 }
 
-bool SmoozikXml::parse(const QDomElement &dataElement) {
+void SmoozikXml::parse(const QDomElement &dataElement) {
     cleanError();
     clear();
 
-    return parseElement(dataElement, this);
+    parseElement(dataElement, this);
 }
 
 bool SmoozikXml::parse(QNetworkReply *reply) {
@@ -101,14 +101,15 @@ bool SmoozikXml::parse(QNetworkReply *reply) {
         return false;
     }
 
-    return parse(dataElement);
+    parse(dataElement);
+    return true;
 }
 
 QString SmoozikXml::print() {
     return "{\n" + printMap(this, 1) + "}\n";
 }
 
-bool SmoozikXml::parseElement(const QDomElement &element, QVariantMap *map) {
+void SmoozikXml::parseElement(const QDomElement &element, QVariantMap *map) {
 
     //Check if element is an array or an object
     bool array = false;
@@ -126,10 +127,7 @@ bool SmoozikXml::parseElement(const QDomElement &element, QVariantMap *map) {
             } else {
 
                 QVariantMap cmap;
-
-                if (!parseElement(e, &cmap)) {
-                    return false;
-                }
+                parseElement(e, &cmap);
 
                 //Check if it is an array or an object
                 if (array) {
@@ -143,7 +141,6 @@ bool SmoozikXml::parseElement(const QDomElement &element, QVariantMap *map) {
             }
         }
     }
-    return true;
 }
 
 QString SmoozikXml::printMap(const QVariantMap *map, const int indent) {

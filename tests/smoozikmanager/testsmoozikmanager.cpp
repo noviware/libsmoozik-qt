@@ -22,23 +22,38 @@
 
 #include <QDomElement>
 
+void TestSmoozikManager::login_data() {
+    QTest::addColumn<QString>("username");
+    QTest::addColumn<QString>("password");
+    QTest::addColumn<bool>("parseResult");
+    QTest::addColumn<int>("errorResult");
+    QTest::addColumn<bool>("sessionKeyNull");
+    QTest::addColumn<bool>("placeNull");
+
+    QTest::newRow("Wrong username") << "error" << MANAGER_PASSWORD << false << (int) SmoozikManager::AuthenticationFailed << true << true;
+    QTest::newRow("Wrong password") << MANAGER_USERNAME << "error" << false << (int) SmoozikManager::AuthenticationFailed << true << true;
+    QTest::newRow("Wrong username and password") << "error" << "error" << false << (int) SmoozikManager::AuthenticationFailed << true << true;
+    QTest::newRow("Success (member)") << MEMBER_USERNAME << MEMBER_PASSWORD << true << (int) SmoozikManager::NoError << false << true;
+    QTest::newRow("Success (manager)") << MANAGER_USERNAME << MANAGER_PASSWORD << true << (int) SmoozikManager::NoError << false << false;
+}
+
 void TestSmoozikManager::login() {
+    QFETCH(QString, username);
+    QFETCH(QString, password);
+    QFETCH(bool, parseResult);
+    QFETCH(int, errorResult);
+    QFETCH(bool, sessionKeyNull);
+    QFETCH(bool, placeNull);
+
     SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;
 
-    reply = manager->login("error", MANAGER_PASSWORD);
-    QCOMPARE(xml.parse(reply), false);
-    QCOMPARE(xml.error(), SmoozikManager::AuthenticationFailed);
-
-    reply = manager->login(MANAGER_USERNAME, "error");
-    QCOMPARE(xml.parse(reply), false);
-    QCOMPARE(xml.error(), SmoozikManager::AuthenticationFailed);
-
-    reply = manager->login(MANAGER_USERNAME, MANAGER_PASSWORD);
-    QCOMPARE(xml.parse(reply), true);
-    QCOMPARE(xml["sessionKey"].isNull(), false);
-    QCOMPARE(xml["place"].isNull(), false);
+    reply = manager->login(username, password);
+    QCOMPARE(xml.parse(reply), parseResult);
+    QCOMPARE((int) xml.error(), errorResult);
+    QCOMPARE(xml["sessionKey"].isNull(), sessionKeyNull);
+    QCOMPARE(xml["place"].isNull(), placeNull);
 }
 
 void TestSmoozikManager::startParty() {
@@ -73,6 +88,7 @@ void TestSmoozikManager::getTopTracks() {
     reply = manager->getTopTracks();
     QCOMPARE(xml.parse(reply), true);
     QCOMPARE(xml["tracks"].isNull(), false);
+    QCOMPARE(xml.print().isEmpty(), false);
 
     //Checks limit and offset
     SmoozikXml xml2;
