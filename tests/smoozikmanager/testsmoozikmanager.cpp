@@ -41,8 +41,7 @@ void TestSmoozikManager::login() {
     QCOMPARE(xml["place"].isNull(), false);
 }
 
-void TestSmoozikManager::startParty()
-{
+void TestSmoozikManager::startParty() {
     SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;
@@ -59,8 +58,7 @@ void TestSmoozikManager::startParty()
     QCOMPARE(xml["party"].isNull(), false);
 }
 
-void TestSmoozikManager::getTopTracks()
-{
+void TestSmoozikManager::getTopTracks() {
     SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;
