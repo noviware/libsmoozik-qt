@@ -40,7 +40,7 @@
 /**
  * @brief The SmoozikManager class is a Network Access Manager designed to send request to Smoozik server.
  */
-class SMOOZIKLIB_EXPORT SmoozikManager : public QNetworkAccessManager {
+class SmoozikManager : public QNetworkAccessManager {
 
     Q_OBJECT
     /**
@@ -236,7 +236,7 @@ signals:
      * @brief This signal is emitted when the request is finished.
      * @param reply The network reply
      */
-    SMOOZIKLIB_EXPORT void requestFinished(QNetworkReply *reply);
+    void requestFinished(QNetworkReply *reply);
 };
 
 #endif // SMOOZIKMANAGER_H

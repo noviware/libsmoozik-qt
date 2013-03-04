@@ -29,7 +29,7 @@
 /**
  * @brief The SmoozikXml class provides with functions to parse XML response from Smoozik webserver
  */
-class SMOOZIKLIB_EXPORT SmoozikXml : public QObject, public QVariantMap {
+class SmoozikXml : public QObject, public QVariantMap {
     /**
      * @brief This property holds the error encountered in last parse() call.
      *

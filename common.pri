@@ -1,4 +1,5 @@
 SMOOZIKLIB_DIR = $$PWD/lib
+LIBSMOOZIK_VER = 1
 
 #Code coverage. gcov is required. Comment this if you do not want to use gcov code coverage
 unix:CONFIG(debug, debug|release) {

@@ -8,10 +8,10 @@ CONFIG(release, debug|release): TARGET = qtsmoozik
 CONFIG(debug, debug|release): TARGET = qtsmoozikd
 DEFINES += SMOOZIK_LIBRARY
 
-VER_MAJ = 1
+VER_MAJ = $$LIBSMOOZIK_VER
 VER_MIN = 0
 VER_PAT = 0
-VERSION = 1.0.0-PR1
+VERSION = 1.0.0
 
 HEADERS += \
     smoozikmanager.h \
