@@ -18,23 +18,14 @@
    along with libsmoozk-qt.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TESTSMOOZIKMANAGER_H
-#define TESTSMOOZIKMANAGER_H
+#include "smoozikplaylist.h"
 
-#include <QtTest>
-#include "smoozikmanager.h"
-#include "smoozikxml.h"
+SmoozikPlaylist::SmoozikPlaylist(QObject *parent) :
+QObject(parent),
+QList<SmoozikTrack *>() {
+}
 
-class TestSmoozikManager : public QObject {
-    Q_OBJECT
-private slots:
-    void format();
-    void login_data();
-    void login();
-    void startParty();
-    void sendPlaylist();
-    void setTrack();
-    void getTopTracks();
-};
-
-#endif // TESTSMOOZIKMANAGER_H
+void SmoozikPlaylist::deleteWithTracks() {
+    qDeleteAll(*this);
+    deleteLater();
+}

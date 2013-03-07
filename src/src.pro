@@ -16,8 +16,12 @@ VERSION = 1.0.0
 HEADERS += \
     smoozikmanager.h \
     smoozikxml.h \
-    global.h
+    global.h \
+    smooziktrack.h \
+    smoozikplaylist.h
 
 SOURCES += \
     smoozikmanager.cpp \
-    smoozikxml.cpp
+    smoozikxml.cpp \
+    smooziktrack.cpp \
+    smoozikplaylist.cpp

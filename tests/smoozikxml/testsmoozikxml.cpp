@@ -75,7 +75,11 @@ void TestSmoozikXml::parse() {
     loop.exec();
     QCOMPARE(xml->parse(reply), parseResult);
     QCOMPARE((int) xml->error(), errorResult);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     QCOMPARE(xml->errorMsg().contains(errorMsgResult), true);
+#else
+    QCOMPARE(xml->errorMsg().contains(errorMsgResult), QBool(true));
+#endif
 
 }
 

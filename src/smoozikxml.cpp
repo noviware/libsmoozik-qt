@@ -55,7 +55,6 @@ bool SmoozikXml::parse(QNetworkReply *reply) {
         return false;
     }
 
-
     QDomElement smoozikElement = xml.firstChildElement("smoozik");
     if (smoozikElement.isNull()) {
         _error = SmoozikManager::ParseError;

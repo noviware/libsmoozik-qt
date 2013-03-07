@@ -92,6 +92,30 @@ void TestSmoozikManager::startParty() {
     QCOMPARE(xml["party"].isNull(), false);
 }
 
+void TestSmoozikManager::sendPlaylist() {
+    SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
+    SmoozikXml xml;
+    QNetworkReply *reply;
+
+    reply = manager->login(MANAGER_USERNAME, MANAGER_PASSWORD);
+    xml.parse(reply);
+    manager->setSessionKey(xml["sessionKey"].toString());
+    reply = manager->startParty();
+
+    SmoozikPlaylist playlist;
+    playlist.addTrack("1", "track1", "artist1", "album1", 220);
+    playlist.addTrack("2", "track2", "artist2");
+    playlist.addTrack("3", "track3");
+    playlist.addTrack("4", "track4", "artist1", "album1", 220);
+    playlist.addTrack("5", "track5", "artist2");
+
+    reply = manager->sendPlaylist(&playlist);
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml.error(), SmoozikManager::NoError);
+
+    playlist.deleteWithTracks();
+}
+
 void TestSmoozikManager::getTopTracks() {
     SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
@@ -116,6 +140,9 @@ void TestSmoozikManager::getTopTracks() {
     QCOMPARE(xml2["tracks"].toMap().count(), 3);
     QCOMPARE(xml2["tracks"].toMap()["0"].toMap()["track"].toMap()["id"].isNull(), false);
     QCOMPARE(xml2["tracks"].toMap()["0"].toMap()["track"].toMap()["id"], xml["tracks"].toMap()["2"].toMap()["track"].toMap()["id"]);
+}
+
+void TestSmoozikManager::setTrack() {
 }
 
 QTEST_MAIN(TestSmoozikManager)

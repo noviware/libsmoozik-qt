@@ -30,12 +30,15 @@
 #include <QMap>
 #include <QStringList>
 #include <QCryptographicHash>
+#include <QDomDocument>
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #include <QUrl>
 #else
 #include <QUrlQuery>
 #endif
 #include "global.h"
+#include "smooziktrack.h"
+#include "smoozikplaylist.h"
 
 /**
  * @brief The SmoozikManager class is a Network Access Manager designed to send request to Smoozik server.
@@ -125,7 +128,7 @@ public:
         SubscriptionOver = 19, /**< Your subscription is over */
         CannotParseSentData = 20 /**< Cannot parse sent data */
     };
-    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, QObject *parent = 0, const QString &secret = "", const Format &format = XML, bool blocking = true);
+    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, QObject *parent = 0, const QString &secret = QString(), const Format &format = XML, bool blocking = true);
 
     inline QString apiKey() const {
         return _apiKey;
@@ -197,22 +200,34 @@ public:
      * @brief Sets a track for the party.
      *
      * If this track has already been sent (with setTrack() or sendPlaylist()), the localId is the only required field.
-     * @param localId Id of the track in client local database
+     * @param track Track to set
      * @param position Position of the track in playlist
-     * @param actual Is the track going to be actually played or is it still possible to change it
-     * @param name Name of the track
-     * @param artistName Name of the artist of the track
-     * @param albumName Name of the album of the track
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *setTrack(const QString &localId, int position = 0, bool actual = true, const QString &name = "", const QString &artistName = "", const QString &albumName = "");
+    inline QNetworkReply *setTrack(const SmoozikTrack *track, int position = 0) {
+        return setTrack(track->localId(), track->name(), position, track->artist(), track->album(), track->duration());
+    }
+
+    /**
+     * @brief Sets a track for the party.
+     *
+     * If this track has already been sent (with setTrack() or sendPlaylist()), the localId is the only required field.
+     * @param localId Id of the track in client local database
+     * @param name Name of the track
+     * @param position Position of the track in playlist
+     * @param artistName Name of the artist of the track
+     * @param albumName Name of the album of the track
+     * @param duration Duraiton of the track
+     * @rights Managers only
+     */
+    SMOOZIKLIB_EXPORT QNetworkReply *setTrack(const QString &localId, const QString &name, int position = 0, const QString &artistName = QString(), const QString &albumName = QString(), uint duration = 0);
 
     /**
      * @brief Sends the playlist.
-     * @param data Playlist in XML format. The structure should respect standards defined in Smoozik API specification.
+     * @param playlist Playlist to send
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *sendPlaylist(const QString &data);
+    SMOOZIKLIB_EXPORT QNetworkReply *sendPlaylist(const SmoozikPlaylist *playlist);
     //@}
 
     /**

@@ -48,19 +48,63 @@ QNetworkReply *SmoozikManager::getTopTracks(int retrieve, int retrieved) {
     return request("getTopTracks", getParams);
 }
 
-QNetworkReply *SmoozikManager::setTrack(const QString &localId, int position, bool actual, const QString &name, const QString &artistName, const QString &albumName) {
+QNetworkReply *SmoozikManager::setTrack(const QString &localId, const QString &name, int position, const QString &artistName, const QString &albumName, uint duration) {
     QMap<QString, QString> postParams;
     postParams.insert("localId", localId);
-    postParams.insert("position", QString::number(position));
-    postParams.insert("actual", actual ? "1" : "0");
     postParams.insert("name", name);
+    postParams.insert("position", QString::number(position));
     postParams.insert("artistName", artistName);
     postParams.insert("albumName", albumName);
+    postParams.insert("duration", QString::number(duration));
 
     return request("setTrack", QMap<QString, QString>(), postParams);
 }
 
-QNetworkReply *SmoozikManager::sendPlaylist(const QString &data) {
+QNetworkReply *SmoozikManager::sendPlaylist(const SmoozikPlaylist *playlist) {
+    QDomDocument doc;
+    QDomElement partytracksElement = doc.createElement("partytracks");
+    doc.appendChild(partytracksElement);
+
+    for (int i = 0; i < playlist->size(); i++) {
+        QDomElement partytrackElement = doc.createElement("partytrack");
+        partytracksElement.appendChild(partytrackElement);
+
+        // Retrieve localID
+        QDomElement localId = doc.createElement("localId");
+        partytrackElement.appendChild(localId);
+        localId.appendChild(doc.createTextNode(playlist->value(i)->localId()));
+
+        QDomElement trackElement = doc.createElement("track");
+        partytrackElement.appendChild(trackElement);
+
+        // Retrieve track name
+        QDomElement name = doc.createElement("name");
+        trackElement.appendChild(name);
+        name.appendChild(doc.createTextNode(playlist->value(i)->name()));
+
+        // Retrieve track artist
+        if (!playlist->value(i)->artist().isEmpty()) {
+            QDomElement artist = doc.createElement("artistName");
+            trackElement.appendChild(artist);
+            artist.appendChild(doc.createTextNode(playlist->value(i)->artist()));
+        }
+
+        // Retrieve track album
+        if (!playlist->value(i)->album().isEmpty()) {
+            QDomElement album = doc.createElement("albumName");
+            trackElement.appendChild(album);
+            album.appendChild(doc.createTextNode(playlist->value(i)->album()));
+        }
+
+        //Retrieve track duration
+        if (playlist->value(i)->duration() > 0) {
+            QDomElement duration = doc.createElement("duration");
+            partytrackElement.appendChild(duration);
+            duration.appendChild(doc.createTextNode(QString::number(playlist->value(i)->duration())));
+        }
+    }
+
+    QString data = doc.toString();
     QMap<QString, QString> postParams;
     postParams.insert("data", data);
 
