@@ -30,21 +30,23 @@
 /**
  * @brief The SmoozikPlaylist class represents a collection of track
  */
-class SmoozikPlaylist : public QObject, public QList<SmoozikTrack *> {
+class SmoozikPlaylist : public QObject {
     Q_OBJECT
 public:
     SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(QObject *parent = 0);
 
     /**
      * @brief Adds a track to the playlist.
+     *
+     * If the playlist already has a track with this localId, the track is not added.
      * @param track
      */
-    inline void addTrack(SmoozikTrack *track) {
-        append(track);
-    }
+    SMOOZIKLIB_EXPORT void addTrack(SmoozikTrack *track);
 
     /**
      * @brief Adds a track to the playlist.
+     *
+     * If the playlist already has a track with this localId, the track is not added.
      * @param localId Local unique Id of the track
      * @param name Name of the track
      * @param artist Artist of the track
@@ -52,15 +54,97 @@ public:
      * @param duration Duration of the track
      */
     inline void addTrack(QString localId, QString name, QString artist = QString(), QString album = QString(), uint duration = 0) {
-        append(new SmoozikTrack(localId, name, this, artist, album, duration));
+        addTrack(new SmoozikTrack(localId, name, this, artist, album, duration));
     }
 
     /**
-     * @brief Deletes the playlist with all its tracks.
-     *
-     * Normal deletion would not free memory occupied by tracks.
+     * @brief Returns true if the playlist contains a track with @i localId; otherwise returns false.
      */
-    SMOOZIKLIB_EXPORT void deleteWithTracks();
+    SMOOZIKLIB_EXPORT bool contains(const QString &localId) const;
+
+    /**
+     * @brief Returns the index position of the first occurrence of track with @i localId in the playlist, searching forward from index position from. Returns -1 if no item matched.
+     */
+    SMOOZIKLIB_EXPORT int indexOf(const QString &localId) const;
+
+    /**
+     * @brief Clear playlist and deletes all playlist tracks.
+     */
+    inline void deleteTracks() {
+        qDeleteAll(_list);
+    }
+
+    /**
+     * @name QList methods
+     */
+    //@{
+
+    inline void clear() {
+        return _list.clear();
+    } /**< Aggregation of QList equivalent method */
+
+    inline int count() const {
+        return _list.count();
+    } /**< Aggregation of QList equivalent method */
+
+    inline SmoozikTrack *first() {
+        return _list.first();
+    } /**< Aggregation of QList equivalent method */
+
+    inline SmoozikTrack *first() const {
+        return _list.first();
+    } /**< Aggregation of QList equivalent method */
+
+    inline bool isEmpty() const {
+        return _list.isEmpty();
+    } /**< Aggregation of QList equivalent method */
+
+    inline SmoozikTrack *last() {
+        return _list.last();
+    } /**< Aggregation of QList equivalent method */
+
+    inline SmoozikTrack *last() const {
+        return _list.last();
+    } /**< Aggregation of QList equivalent method */
+
+    inline void removeAt(int i) {
+        return _list.removeAt(i);
+    } /**< Aggregation of QList equivalent method */
+
+    inline void removeFirst() {
+        return _list.removeFirst();
+    } /**< Aggregation of QList equivalent method */
+
+    inline void removeLast() {
+        return _list.removeLast();
+    } /**< Aggregation of QList equivalent method */
+
+    inline int size() const {
+        return _list.size();
+    } /**< Aggregation of QList equivalent method */
+
+    inline SmoozikTrack *takeAt(int i) {
+        return _list.takeAt(i);
+    } /**< Aggregation of QList equivalent method */
+
+    inline SmoozikTrack *takeFirst() {
+        return _list.takeFirst();
+    } /**< Aggregation of QList equivalent method */
+
+    inline SmoozikTrack *takeLast() {
+        return _list.takeLast();
+    } /**< Aggregation of QList equivalent method */
+
+    inline SmoozikTrack *value(int i) const {
+        return _list.value(i);
+    } /**< Aggregation of QList equivalent method */
+    //@}
+
+private:
+    /**
+     * @brief This property holds the QList containing the SmoozikTrack objects.
+     */
+    QList<SmoozikTrack *> _list;
 };
 
 #endif // SMOOZIKPLAYLIST_H

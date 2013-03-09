@@ -18,34 +18,18 @@
    along with libsmoozk-qt.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smoozikplaylist.h"
+#ifndef TESTSMOOZIKPLAYLIST_H
+#define TESTSMOOZIKPLAYLIST_H
 
-SmoozikPlaylist::SmoozikPlaylist(QObject *parent) :
-QObject(parent) {
-}
+#include <QtTest>
 
-void SmoozikPlaylist::addTrack(SmoozikTrack *track) {
-    if (!contains(track->localId())) {
-        _list.append(track);
-    }
-}
+class TestSmoozikPlaylist : public QObject {
+    Q_OBJECT
+private slots:
+    void addTrack();
+    void qListAggregation();
+    void deleteTracks();
+    void childrenDeletion();
+};
 
-bool SmoozikPlaylist::contains(const QString &localId) const {
-
-    foreach(SmoozikTrack *track, _list) {
-        if (track->localId() == localId) {
-            return true;
-        }
-    }
-    return false;
-}
-
-int SmoozikPlaylist::indexOf(const QString &localId) const {
-    int listCount = count();
-    for (int i = 0; i < listCount; i++) {
-        if (value(i)->localId() == localId) {
-            return i;
-        }
-    }
-    return -1;
-}
+#endif // TESTSMOOZIKPLAYLIST_H
