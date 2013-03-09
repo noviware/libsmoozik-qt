@@ -22,8 +22,6 @@
 #define TESTSMOOZIKMANAGER_H
 
 #include <QtTest>
-#include "smoozikmanager.h"
-#include "smoozikxml.h"
 
 class TestSmoozikManager : public QObject {
     Q_OBJECT

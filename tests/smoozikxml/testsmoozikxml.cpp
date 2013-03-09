@@ -19,6 +19,7 @@
  */
 
 #include "testsmoozikxml.h"
+#include "smoozikxml.h"
 #include "simplehttpserver.h"
 
 void TestSmoozikXml::serverUnreachable() {

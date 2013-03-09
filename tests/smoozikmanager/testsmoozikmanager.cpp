@@ -19,6 +19,8 @@
  */
 
 #include "testsmoozikmanager.h"
+#include "smoozikmanager.h"
+#include "smoozikxml.h"
 
 #include <QDomElement>
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -112,8 +114,29 @@ void TestSmoozikManager::sendPlaylist() {
     reply = manager->sendPlaylist(&playlist);
     QCOMPARE(xml.parse(reply), true);
     QCOMPARE(xml.error(), SmoozikManager::NoError);
+}
 
-    playlist.deleteWithTracks();
+void TestSmoozikManager::setTrack() {
+    SmoozikManager *manager = new SmoozikManager(APIKEY, this, SECRET, SmoozikManager::XML, true);
+    SmoozikXml xml;
+    QNetworkReply *reply;
+
+    reply = manager->login(MANAGER_USERNAME, MANAGER_PASSWORD);
+    xml.parse(reply);
+    manager->setSessionKey(xml["sessionKey"].toString());
+    reply = manager->startParty();
+
+    //Track in playlist
+    SmoozikTrack track1("1", "track1", this, "artist1", "album1", 220);
+    reply = manager->setTrack(&track1);
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml.error(), SmoozikManager::NoError);
+
+    //Track not in playlist
+    SmoozikTrack track6("6", "track6", this);
+    reply = manager->setTrack(&track6);
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml.error(), SmoozikManager::NoError);
 }
 
 void TestSmoozikManager::getTopTracks() {
@@ -140,9 +163,6 @@ void TestSmoozikManager::getTopTracks() {
     QCOMPARE(xml2["tracks"].toMap().count(), 3);
     QCOMPARE(xml2["tracks"].toMap()["0"].toMap()["track"].toMap()["id"].isNull(), false);
     QCOMPARE(xml2["tracks"].toMap()["0"].toMap()["track"].toMap()["id"], xml["tracks"].toMap()["2"].toMap()["track"].toMap()["id"]);
-}
-
-void TestSmoozikManager::setTrack() {
 }
 
 QTEST_MAIN(TestSmoozikManager)
