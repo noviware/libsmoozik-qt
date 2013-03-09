@@ -29,7 +29,7 @@
 /**
  * @brief The SmoozikXml class provides with functions to parse XML response from Smoozik webserver
  */
-class SmoozikXml : public QObject, public QVariantMap {
+class SmoozikXml : public QObject {
     /**
      * @brief This property holds the error encountered in last parse() call.
      *
@@ -47,6 +47,7 @@ class SmoozikXml : public QObject, public QVariantMap {
      */
     Q_PROPERTY(QString errorMsg READ errorMsg)
     Q_OBJECT
+
 public:
     SMOOZIKLIB_EXPORT explicit SmoozikXml(QObject *parent = 0);
 
@@ -75,36 +76,67 @@ public:
     SMOOZIKLIB_EXPORT bool parse(QNetworkReply *reply);
 
     /**
+     * @brief Returns the element at @i key of #_parsed if _parsed is a QMap.
+     *
+     * This element might either be a QString (accessible through QVariant::toString()),
+     * a QList (accessible through QVariant::toList())
+     * or a QMap (accessible through QVariant::toMap()).
+     */
+    SMOOZIKLIB_EXPORT const QVariant operator[] (const QString &key) const;
+
+    /**
+     * @brief Returns the element at index position @i i of #_parsed if _parsed is a QList.
+     *
+     * This element might either be a QString (accessible through QVariant::toString()),
+     * a QList (accessible through QVariant::toList())
+     * or a QMap (accessible through QVariant::toMap()).
+     */
+    SMOOZIKLIB_EXPORT const QVariant operator[] (const int i) const;
+
+    /**
+     * @brief if _parsed is a QString, return this string; else returns an empty string.
+     */
+    inline const QString parsedString() const {
+        return _parsed.toString();
+    }
+
+    /**
      * @brief Returns a structured string of the parsed xml to print.
      * @return A structured string
      */
-    SMOOZIKLIB_EXPORT QString print();
+    inline const QString print() const {
+        return printVariant(_parsed, 0);
+    }
 
 private:
+    /**
+     * @brief This property holds the QVariant containing the parsed xml.
+     */
+    QVariant _parsed;
     SmoozikManager::Error _error; /**< @see #error */
     QString _errorMsg; /**< @see #errorMsg */
     /**
-     * @brief Parses a Dom element and add it to the map.
+     * @brief Parses a Dom element and add it to the variant.
      *
      * This function is used recursively by parse().
-     * @param map The map to which the element should be added
+     * @param variant The variant to which the element should be added
      */
-    void parseElement(const QDomElement &element, QVariantMap *map);
+    void parseElement(const QDomElement &element, QVariant *variant);
 
     /**
-     * @brief Returns a structured string of map.
+     * @brief Returns a structured string of variant.
      *
      * This function is used recursively by print().
-     * @param map The QMap to print.
-     * @param indent Indentation
+     * @param variant The QVariant to print (either a QString, a QList or a QMap).
+     * @param indentCount Indentation
      * @return A structured string
      */
-    QString printMap(const QVariantMap *map, const int indent = 0);
+    const QString printVariant(const QVariant &variant, const int indentCount = 0) const;
+
     /**
      * @brief Cleans error and error message.
      */
     void cleanError();
-
 };
 
 #endif // SMOOZIKXML_H

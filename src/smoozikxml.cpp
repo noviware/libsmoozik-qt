@@ -21,16 +21,15 @@
 #include "smoozikxml.h"
 
 SmoozikXml::SmoozikXml(QObject *parent) :
-QObject(parent),
-QVariantMap() {
+QObject(parent) {
     cleanError();
 }
 
 void SmoozikXml::parse(const QDomElement &dataElement) {
     cleanError();
-    clear();
+    _parsed.clear();
 
-    parseElement(dataElement, this);
+    parseElement(dataElement, &_parsed);
 }
 
 bool SmoozikXml::parse(QNetworkReply *reply) {
@@ -84,6 +83,7 @@ bool SmoozikXml::parse(QNetworkReply *reply) {
             _errorMsg = tr("Could not parse xml : %1 element is missing.").arg("code");
             return false;
         }
+
         int code = codeElement.text().toInt();
         QDomElement messageElement = errorElement.firstChildElement("message");
         QString message = messageElement.text();
@@ -104,59 +104,80 @@ bool SmoozikXml::parse(QNetworkReply *reply) {
     return true;
 }
 
-QString SmoozikXml::print() {
-    return "{\n" + printMap(this, 1) + "}\n";
+const QVariant SmoozikXml::operator [](const QString &key) const {
+    if (!_parsed.toMap().isEmpty()) {
+        return _parsed.toMap()[key];
+    }
+    return QVariant();
 }
 
-void SmoozikXml::parseElement(const QDomElement &element, QVariantMap *map) {
+const QVariant SmoozikXml::operator [](const int i) const {
+    if (!_parsed.toList().isEmpty()) {
+        return _parsed.toList().value(i);
+    }
+    return QVariant();
+}
 
-    //Check if element is an array or an object
-    bool array = false;
+void SmoozikXml::parseElement(const QDomElement &element, QVariant *variant) {
+    // Case when element is text
+    QDomText t = element.firstChild().toText();
+    if (!t.isNull()) {
+        variant->setValue(t.data());
+        return;
+    }
+
+    //Case when element is an array
     QDomElement fe = element.firstChildElement();
     if (!fe.nextSiblingElement(fe.tagName()).isNull()) {
-        array = true;
-    }
-    int i = 0;
-    for (QDomElement e = element.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
-        QDomNode f = e.firstChild();
-        if (!f.isNull()) {
-            QDomText t = f.toText();
-            if (!t.isNull()) {
-                (*map)[e.tagName()] = t.data();
-            } else {
-
-                QVariantMap cmap;
-                parseElement(e, &cmap);
-
-                //Check if it is an array or an object
-                if (array) {
-                    QVariantMap vmap;
-                    vmap[e.tagName()] = cmap;
-                    (*map)[QString::number(i++)] = vmap;
-
-                } else {
-                    (*map)[e.tagName()] = cmap;
-                }
-            }
+        QVariantList list;
+        for (QDomElement e = element.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
+            QVariantMap map;
+            QVariant child;
+            parseElement(e, &child);
+            map[e.tagName()] = child;
+            list.append(map);
         }
+        variant->setValue(list);
+        return;
     }
+
+    //Case when element is not an array
+    QVariantMap map;
+    for (QDomElement e = element.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
+        QVariant child;
+        parseElement(e, &child);
+        map[e.tagName()] = child;
+    }
+    variant->setValue(map);
+    return;
 }
 
-QString SmoozikXml::printMap(const QVariantMap *map, const int indent) {
+const QString SmoozikXml::printVariant(const QVariant &variant, const int indentCount) const {
     QString res;
-    QString tab;
-    for (int i = 0; i < indent; i++) {
-        tab += "    ";
+    QString tab = "    ";
+    QString indent;
+    for (int i = 0; i < indentCount; i++) {
+        indent += tab;
     }
 
-    foreach(QString key, map->keys()) {
-        const QVariant val = map->value(key);
-        if (!val.toMap().isEmpty()) {
-            const QVariantMap vmap = val.toMap();
-            res += tab + key + " :\n" + tab + "{\n" + printMap(&vmap, indent + 1) + tab + "}\n";
-        } else if (!val.toString().isEmpty()) {
-            res += tab + key + " : " + val.toString() + "\n";
+    if (!variant.toString().isEmpty()) {
+        res = variant.toString() + "\n";
+    } else if (!variant.toList().isEmpty()) {
+        res += "{\n";
+
+        foreach(QVariant child, variant.toList()) {
+            res += indent + tab + printVariant(child, indentCount + 1);
         }
+        res += indent + "}\n";
+    } else if (!variant.toMap().isEmpty()) {
+        res += "{\n";
+
+        foreach(QString key, variant.toMap().keys()) {
+            res += indent + tab + key + " : " + printVariant(variant.toMap()[key], indentCount + 1);
+        }
+        res += indent + "}\n";
+    } else {
+        res = "\n";
     }
 
     return res;

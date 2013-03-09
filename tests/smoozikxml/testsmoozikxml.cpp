@@ -81,7 +81,42 @@ void TestSmoozikXml::parse() {
 #else
     QCOMPARE(xml->errorMsg().contains(errorMsgResult), QBool(true));
 #endif
+}
 
+void TestSmoozikXml::operators_data() {
+    QTest::addColumn<QString>("response");
+    QTest::addColumn<bool>("toMap");
+    QTest::addColumn<bool>("toList");
+    QTest::addColumn<QString>("toString");
+
+    QTest::newRow("Map response") << "<smoozik><status>ok</status><data><test>hello</test><test2>hello</test2></data></smoozik>" << true << false << QString();
+    QTest::newRow("List response") << "<smoozik><status>ok</status><data><test>hello</test><test>hello</test></data></smoozik>" << false << true << QString();
+    QTest::newRow("String response") << "<smoozik><status>ok</status><data>hello</data></smoozik>" << false << false << QString("hello");
+}
+
+void TestSmoozikXml::operators() {
+    QFETCH(QString, response);
+    QFETCH(bool, toMap);
+    QFETCH(bool, toList);
+    QFETCH(QString, toString);
+
+    SmoozikXml xml;
+    SimpleHttpServer server(8080);
+    server.setResponse(response);
+
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl("http://127.0.0.1:8080"));
+    QNetworkReply *reply;
+    QEventLoop loop;
+    connect(&manager, SIGNAL(finished(QNetworkReply*)), &loop, SLOT(quit()));
+
+    reply = manager.get(request);
+    loop.exec();
+
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["test"] != QVariant(), toMap);
+    QCOMPARE(xml[0] != QVariant(), toList);
+    QCOMPARE(xml.parsedString(), toString);
 }
 
 QTEST_MAIN(TestSmoozikXml)

@@ -29,6 +29,8 @@ private slots:
     void serverUnreachable();
     void parse_data();
     void parse();
+    void operators_data();
+    void operators();
 };
 
 #endif // TESTSMOOZIKXML_H

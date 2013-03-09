@@ -160,9 +160,10 @@ void TestSmoozikManager::getTopTracks() {
     SmoozikXml xml2;
     reply = manager->getTopTracks(3, 2);
     xml2.parse(reply);
-    QCOMPARE(xml2["tracks"].toMap().count(), 3);
-    QCOMPARE(xml2["tracks"].toMap()["0"].toMap()["track"].toMap()["id"].isNull(), false);
-    QCOMPARE(xml2["tracks"].toMap()["0"].toMap()["track"].toMap()["id"], xml["tracks"].toMap()["2"].toMap()["track"].toMap()["id"]);
+
+    QCOMPARE(xml2["tracks"].toList().count(), 3);
+    QCOMPARE(xml2["tracks"].toList()[0].toMap()["track"].toMap()["id"].isNull(), false);
+    QCOMPARE(xml2["tracks"].toList()[0].toMap()["track"].toMap()["id"], xml["tracks"].toList()[2].toMap()["track"].toMap()["id"]);
 }
 
 QTEST_MAIN(TestSmoozikManager)
