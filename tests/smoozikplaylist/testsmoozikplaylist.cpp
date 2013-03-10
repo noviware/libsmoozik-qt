@@ -20,6 +20,40 @@
 
 #include "testsmoozikplaylist.h"
 #include "smoozikplaylist.h"
+#include "smoozikxml.h"
+
+void TestSmoozikPlaylist::constructors() {
+    SmoozikPlaylist playlist;
+    QCOMPARE(playlist.isEmpty(), true);
+
+    QString str = "<tracks><track><localId>1</localId><name>track1</name></track><track><localId>2</localId><name>track2</name></track></tracks>";
+    QDomDocument doc;
+    doc.setContent(str);
+
+    SmoozikPlaylist playlist2(doc);
+    QCOMPARE(playlist2.isEmpty(), false);
+    QCOMPARE(playlist2.first()->localId(), QString("1"));
+    QCOMPARE(playlist2.first()->name(), QString("track1"));
+    QCOMPARE(playlist2.last()->localId(), QString("2"));
+    QCOMPARE(playlist2.last()->name(), QString("track2"));
+
+    QVariant variant = SmoozikXml::parseElement(doc.firstChildElement());
+
+    SmoozikPlaylist playlist3(variant.toList());
+    QCOMPARE(playlist3.isEmpty(), false);
+    QCOMPARE(playlist3.first()->localId(), QString("1"));
+    QCOMPARE(playlist3.first()->name(), QString("track1"));
+    QCOMPARE(playlist3.last()->localId(), QString("2"));
+    QCOMPARE(playlist3.last()->name(), QString("track2"));
+
+    QDomDocument emptyDoc;
+    SmoozikPlaylist playlist4(emptyDoc);
+    QCOMPARE(playlist4.isEmpty(), true);
+
+    QVariantList emptyList;
+    SmoozikPlaylist playlist5(emptyList);
+    QCOMPARE(playlist5.isEmpty(), true);
+}
 
 void TestSmoozikPlaylist::addTrack() {
     SmoozikPlaylist playlist;
@@ -41,6 +75,37 @@ void TestSmoozikPlaylist::addTrack() {
     QCOMPARE(playlist.count(), 2);
     playlist.addTrack("1", "track1");
     QCOMPARE(playlist.count(), 2);
+}
+
+void TestSmoozikPlaylist::addTracks() {
+    SmoozikPlaylist playlist;
+    QCOMPARE(playlist.isEmpty(), true);
+    QCOMPARE(playlist.count(), 0);
+
+    QString str = "<tracks><track><localId>1</localId><name>track1</name></track><track><localId>2</localId><name>track2</name></track></tracks>";
+    QDomDocument doc;
+    doc.setContent(str);
+
+    playlist.addTracks(doc);
+    QCOMPARE(playlist.isEmpty(), false);
+    QCOMPARE(playlist.first()->localId(), QString("1"));
+    QCOMPARE(playlist.first()->name(), QString("track1"));
+    QCOMPARE(playlist.last()->localId(), QString("2"));
+    QCOMPARE(playlist.last()->name(), QString("track2"));
+    QCOMPARE(playlist.count(), 2);
+
+    QString str2 = "<tracks><track><localId>1</localId><name>track1</name></track><track><localId>3</localId><name>track3</name></track></tracks>";
+    QDomDocument doc2;
+    doc2.setContent(str2);
+    QVariant variant = SmoozikXml::parseElement(doc2.firstChildElement());
+
+    playlist.addTracks(variant.toList());
+    QCOMPARE(playlist.isEmpty(), false);
+    QCOMPARE(playlist.first()->localId(), QString("1"));
+    QCOMPARE(playlist.first()->name(), QString("track1"));
+    QCOMPARE(playlist.last()->localId(), QString("3"));
+    QCOMPARE(playlist.last()->name(), QString("track3"));
+    QCOMPARE(playlist.count(), 3);
 }
 
 void TestSmoozikPlaylist::qListAggregation() {

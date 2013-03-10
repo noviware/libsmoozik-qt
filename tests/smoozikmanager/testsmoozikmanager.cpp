@@ -164,6 +164,11 @@ void TestSmoozikManager::getTopTracks() {
     QCOMPARE(xml2["tracks"].toList().count(), 3);
     QCOMPARE(xml2["tracks"].toList()[0].toMap()["track"].toMap()["id"].isNull(), false);
     QCOMPARE(xml2["tracks"].toList()[0].toMap()["track"].toMap()["id"], xml["tracks"].toList()[2].toMap()["track"].toMap()["id"]);
+
+    //Retrieve playlist from xml
+    SmoozikPlaylist playlist(xml["tracks"].toList());
+    QCOMPARE(playlist.count(), xml["tracks"].toList().count());
+    QCOMPARE(playlist.first()->localId(), xml["tracks"].toList()[0].toMap()["track"].toMap()["localId"].toString());
 }
 
 QTEST_MAIN(TestSmoozikManager)

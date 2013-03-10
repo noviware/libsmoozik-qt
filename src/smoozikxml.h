@@ -76,13 +76,20 @@ public:
     SMOOZIKLIB_EXPORT bool parse(QNetworkReply *reply);
 
     /**
+     * @brief Parses a Dom element and returns it in a QVariant.
+     *
+     * This function is used recursively by parse().
+     */
+    SMOOZIKLIB_EXPORT static QVariant parseElement(const QDomElement &element);
+
+    /**
      * @brief Returns the element at @i key of #_parsed if _parsed is a QMap.
      *
      * This element might either be a QString (accessible through QVariant::toString()),
      * a QList (accessible through QVariant::toList())
      * or a QMap (accessible through QVariant::toMap()).
      */
-    SMOOZIKLIB_EXPORT const QVariant operator[] (const QString &key) const;
+    SMOOZIKLIB_EXPORT QVariant operator[] (const QString &key) const;
 
     /**
      * @brief Returns the element at index position @i i of #_parsed if _parsed is a QList.
@@ -91,12 +98,12 @@ public:
      * a QList (accessible through QVariant::toList())
      * or a QMap (accessible through QVariant::toMap()).
      */
-    SMOOZIKLIB_EXPORT const QVariant operator[] (const int i) const;
+    SMOOZIKLIB_EXPORT QVariant operator[] (const int i) const;
 
     /**
      * @brief if _parsed is a QString, return this string; else returns an empty string.
      */
-    inline const QString parsedString() const {
+    inline QString parsedString() const {
         return _parsed.toString();
     }
 
@@ -104,24 +111,9 @@ public:
      * @brief Returns a structured string of the parsed xml to print.
      * @return A structured string
      */
-    inline const QString print() const {
+    inline QString print() const {
         return printVariant(_parsed, 0);
     }
-
-private:
-    /**
-     * @brief This property holds the QVariant containing the parsed xml.
-     */
-    QVariant _parsed;
-    SmoozikManager::Error _error; /**< @see #error */
-    QString _errorMsg; /**< @see #errorMsg */
-    /**
-     * @brief Parses a Dom element and add it to the variant.
-     *
-     * This function is used recursively by parse().
-     * @param variant The variant to which the element should be added
-     */
-    void parseElement(const QDomElement &element, QVariant *variant);
 
     /**
      * @brief Returns a structured string of variant.
@@ -131,7 +123,15 @@ private:
      * @param indentCount Indentation
      * @return A structured string
      */
-    const QString printVariant(const QVariant &variant, const int indentCount = 0) const;
+    SMOOZIKLIB_EXPORT static QString printVariant(const QVariant &variant, const int indentCount = 0);
+
+private:
+    /**
+     * @brief This property holds the QVariant containing the parsed xml.
+     */
+    QVariant _parsed;
+    SmoozikManager::Error _error; /**< @see #error */
+    QString _errorMsg; /**< @see #errorMsg */
 
     /**
      * @brief Cleans error and error message.

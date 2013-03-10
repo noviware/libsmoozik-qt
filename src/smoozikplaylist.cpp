@@ -19,14 +19,40 @@
  */
 
 #include "smoozikplaylist.h"
+#include "smoozikxml.h"
 
 SmoozikPlaylist::SmoozikPlaylist(QObject *parent) :
 QObject(parent) {
 }
 
+SmoozikPlaylist::SmoozikPlaylist(const QDomDocument &doc, QObject *parent) :
+QObject(parent) {
+    addTracks(doc);
+}
+
+SmoozikPlaylist::SmoozikPlaylist(const QVariantList &list, QObject *parent) :
+QObject(parent) {
+    addTracks(list);
+}
+
 void SmoozikPlaylist::addTrack(SmoozikTrack *track) {
     if (!contains(track->localId())) {
         _list.append(track);
+    }
+}
+
+void SmoozikPlaylist::addTracks(const QDomDocument &doc) {
+    return addTracks(SmoozikXml::parseElement(doc.firstChildElement()).toList());
+}
+
+void SmoozikPlaylist::addTracks(const QVariantList &list) {
+
+    foreach(QVariant variant, list) {
+        if (!variant.toMap().isEmpty()) {
+            if (variant.toMap().contains("track")) {
+                addTrack(new SmoozikTrack(variant.toMap()["track"].toMap(), this));
+            }
+        }
     }
 }
 

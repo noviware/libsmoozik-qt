@@ -22,7 +22,8 @@
 #define SMOOZIKPLAYLIST_H
 
 #include <QObject>
-#include <QList>
+#include <QVariantList>
+#include <QDomDocument>
 
 #include "global.h"
 #include "smooziktrack.h"
@@ -32,8 +33,21 @@
  */
 class SmoozikPlaylist : public QObject {
     Q_OBJECT
+
 public:
     SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(QObject *parent = 0);
+    /**
+     * @brief Constructs a SmoozikPlaylist and fills it with data from DomDocument @i doc.
+     * @param doc DomDocument containing a list of <track> elements
+     * @param parent
+     */
+    SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(const QDomDocument &doc, QObject *parent = 0);
+    /**
+     * @brief Constructs a SmoozikPlaylist and fills it with data from QVariantList @i list.
+     * @param list QVariantList containing a list of track elements parsed using SmoozikXml
+     * @param parent
+     */
+    SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(const QVariantList &list, QObject *parent = 0);
 
     /**
      * @brief Adds a track to the playlist.
@@ -56,6 +70,18 @@ public:
     inline void addTrack(QString localId, QString name, QString artist = QString(), QString album = QString(), uint duration = 0) {
         addTrack(new SmoozikTrack(localId, name, this, artist, album, duration));
     }
+
+    /**
+     * @brief Adds tracks from DomDocument @i doc to the playlist.
+     * @param doc DomDocument containing a list of <track> elements
+     */
+    SMOOZIKLIB_EXPORT void addTracks(const QDomDocument &doc);
+
+    /**
+     * @brief Adds tracks from QVariantList @i doc to the playlist.
+     * @param list QVariantList containing a list of track elements parsed using SmoozikXml
+     */
+    SMOOZIKLIB_EXPORT void addTracks(const QVariantList &list);
 
     /**
      * @brief Returns true if the playlist contains a track with @i localId; otherwise returns false.

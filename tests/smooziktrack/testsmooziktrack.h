@@ -18,20 +18,15 @@
    along with libsmoozk-qt.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TESTSMOOZIKPLAYLIST_H
-#define TESTSMOOZIKPLAYLIST_H
+#ifndef TESTSMOOZIKTRACK_H
+#define TESTSMOOZIKTRACK_H
 
 #include <QtTest>
 
-class TestSmoozikPlaylist : public QObject {
+class TestSmoozikTrack : public QObject {
     Q_OBJECT
 private slots:
     void constructors();
-    void addTrack();
-    void addTracks();
-    void qListAggregation();
-    void deleteTracks();
-    void childrenDeletion();
 };
 
-#endif // TESTSMOOZIKPLAYLIST_H
+#endif // TESTSMOOZIKTRACK_H

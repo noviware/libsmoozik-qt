@@ -27,9 +27,8 @@ QObject(parent) {
 
 void SmoozikXml::parse(const QDomElement &dataElement) {
     cleanError();
-    _parsed.clear();
 
-    parseElement(dataElement, &_parsed);
+    _parsed = parseElement(dataElement);
 }
 
 bool SmoozikXml::parse(QNetworkReply *reply) {
@@ -104,26 +103,27 @@ bool SmoozikXml::parse(QNetworkReply *reply) {
     return true;
 }
 
-const QVariant SmoozikXml::operator [](const QString &key) const {
+QVariant SmoozikXml::operator [](const QString &key) const {
     if (!_parsed.toMap().isEmpty()) {
         return _parsed.toMap()[key];
     }
     return QVariant();
 }
 
-const QVariant SmoozikXml::operator [](const int i) const {
+QVariant SmoozikXml::operator [](const int i) const {
     if (!_parsed.toList().isEmpty()) {
         return _parsed.toList().value(i);
     }
     return QVariant();
 }
 
-void SmoozikXml::parseElement(const QDomElement &element, QVariant *variant) {
+QVariant SmoozikXml::parseElement(const QDomElement &element) {
+    QVariant variant;
     // Case when element is text
     QDomText t = element.firstChild().toText();
     if (!t.isNull()) {
-        variant->setValue(t.data());
-        return;
+        variant.setValue(t.data());
+        return variant;
     }
 
     //Case when element is an array
@@ -132,27 +132,25 @@ void SmoozikXml::parseElement(const QDomElement &element, QVariant *variant) {
         QVariantList list;
         for (QDomElement e = element.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
             QVariantMap map;
-            QVariant child;
-            parseElement(e, &child);
+            QVariant child = parseElement(e);
             map[e.tagName()] = child;
             list.append(map);
         }
-        variant->setValue(list);
-        return;
+        variant.setValue(list);
+        return variant;
     }
 
     //Case when element is not an array
     QVariantMap map;
     for (QDomElement e = element.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
-        QVariant child;
-        parseElement(e, &child);
+        QVariant child = parseElement(e);
         map[e.tagName()] = child;
     }
-    variant->setValue(map);
-    return;
+    variant.setValue(map);
+    return variant;
 }
 
-const QString SmoozikXml::printVariant(const QVariant &variant, const int indentCount) const {
+QString SmoozikXml::printVariant(const QVariant &variant, const int indentCount) {
     QString res;
     QString tab = "    ";
     QString indent;
