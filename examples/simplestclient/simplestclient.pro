@@ -1,5 +1,5 @@
 include(../../common.pri)
-QT       += core
+QT += core network xml
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 lessThan(QT_MAJOR_VERSION, 5): QT += gui
 

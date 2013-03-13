@@ -18,10 +18,12 @@
    along with libsmoozk-qt.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smoozikconsoleroutineapplication.h"
+#ifndef CONFIG_H
+#define CONFIG_H
 
-int main(int argc, char *argv[]) {
-    SmoozikConsoleRoutineApplication a(argc, argv);
+#define USERNAME ""
+#define PASSWORD ""
+#define APIKEY ""
+#define SECRET ""
 
-    return a.run();
-}
+#endif // CONFIG_H

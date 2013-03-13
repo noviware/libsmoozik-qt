@@ -1,5 +1,5 @@
 include(../../common.pri)
-QT += core
+QT += core network xml
 lessThan(QT_MAJOR_VERSION, 5): QT -= gui
 
 TARGET = consoleroutine
@@ -24,4 +24,9 @@ CONFIG(debug, debug|release) {
 #Tell the exe to look for shared library in SMOOZIKLIB_DIR
 unix:QMAKE_LFLAGS += -Wl,-R -Wl,$$SMOOZIKLIB_DIR
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    smoozikconsoleroutineapplication.cpp
+
+HEADERS += \
+    config.h \
+    smoozikconsoleroutineapplication.h

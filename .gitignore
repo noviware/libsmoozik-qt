@@ -24,3 +24,5 @@ Makefile
 lib/*
 doc/*
 src/global.h
+examples/consoleroutine/config.h
+examples/simplestclient/config.h

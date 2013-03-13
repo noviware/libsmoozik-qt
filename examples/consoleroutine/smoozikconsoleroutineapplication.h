@@ -18,10 +18,15 @@
    along with libsmoozk-qt.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smoozikconsoleroutineapplication.h"
+#ifndef SMOOZIKCONSOLEROUTINEAPPLICATION_H
+#define SMOOZIKCONSOLEROUTINEAPPLICATION_H
 
-int main(int argc, char *argv[]) {
-    SmoozikConsoleRoutineApplication a(argc, argv);
+#include <QCoreApplication>
 
-    return a.run();
-}
+class SmoozikConsoleRoutineApplication : public QCoreApplication {
+public:
+    SmoozikConsoleRoutineApplication(int& argc, char* argv[]);
+    void run();
+};
+
+#endif // SMOOZIKCONSOLEROUTINEAPPLICATION_H
