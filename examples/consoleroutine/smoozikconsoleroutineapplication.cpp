@@ -126,7 +126,7 @@ int SmoozikConsoleRoutineApplication::run() {
     out << "Top tracks retrieved successfully:\n";
     for (int i = 0; i < topTracks.count(); i++) {
         SmoozikTrack *track = topTracks.value(i);
-        out << QString("  - Track #%1: %2 - %3\n").arg(i + 1).arg(track->name()).arg(track->artist());
+        out << QString("  - #%1: %2 - %3\n").arg(i + 1).arg(track->name()).arg(track->artist());
     }
 
     out << "Console example finished.\n";

@@ -185,6 +185,7 @@ public:
     /**
      * @brief Starts a party.
      *
+     * Current and coming tracks are unset during the method.
      * @rights Managers only
      */
     SMOOZIKLIB_EXPORT QNetworkReply *startParty();
