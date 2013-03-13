@@ -56,14 +56,14 @@ QNetworkReply *SmoozikManager::getTopTracks(int retrieve, int retrieved) {
     return request("getTopTracks", getParams);
 }
 
-QNetworkReply *SmoozikManager::setTrack(const QString &localId, const QString &name, int position, const QString &artistName, const QString &albumName, uint duration) {
+QNetworkReply *SmoozikManager::setTrack(const QString &localId, const QString &name, const QString &artistName, const QString &albumName, uint duration, int position) {
     QMap<QString, QString> postParams;
     postParams.insert("localId", localId);
     postParams.insert("name", name);
-    postParams.insert("position", QString::number(position));
     postParams.insert("artistName", artistName);
     postParams.insert("albumName", albumName);
     postParams.insert("duration", QString::number(duration));
+    postParams.insert("position", QString::number(position));
 
     return request("setTrack", QMap<QString, QString>(), postParams);
 }

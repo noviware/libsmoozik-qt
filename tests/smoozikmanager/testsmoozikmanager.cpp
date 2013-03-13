@@ -27,6 +27,16 @@
 #include <QJsonDocument>
 #endif
 
+void TestSmoozikManager::constructors() {
+    SmoozikManager manager(APIKEY);
+    QCOMPARE(manager.apiKey(), QString(APIKEY));
+    QCOMPARE(manager.secret(), QString());
+
+    SmoozikManager manager2(APIKEY, SECRET);
+    QCOMPARE(manager2.apiKey(), QString(APIKEY));
+    QCOMPARE(manager2.secret(), QString(SECRET));
+}
+
 void TestSmoozikManager::format() {
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     QNetworkReply *reply = manager.login(MEMBER_USERNAME, MEMBER_PASSWORD);

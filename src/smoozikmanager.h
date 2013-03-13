@@ -129,7 +129,7 @@ public:
         CannotParseSentData = 20 /**< Cannot parse sent data */
     };
     SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const Format &format = XML, bool blocking = true, QObject *parent = 0);
-    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const QString &secret = QString(), const Format &format = XML, bool blocking = true, QObject *parent = 0);
+    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const QString &secret, const Format &format = XML, bool blocking = true, QObject *parent = 0);
 
     inline QString apiKey() const {
         return _apiKey;
@@ -206,7 +206,7 @@ public:
      * @rights Managers only
      */
     inline QNetworkReply *setTrack(const SmoozikTrack *track, int position = 0) {
-        return setTrack(track->localId(), track->name(), position, track->artist(), track->album(), track->duration());
+        return setTrack(track->localId(), track->name(), track->artist(), track->album(), track->duration(), position);
     }
 
     /**
@@ -221,7 +221,7 @@ public:
      * @param duration Duraiton of the track
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *setTrack(const QString &localId, const QString &name, int position = 0, const QString &artistName = QString(), const QString &albumName = QString(), uint duration = 0);
+    SMOOZIKLIB_EXPORT QNetworkReply *setTrack(const QString &localId, const QString &name, const QString &artistName = QString(), const QString &albumName = QString(), uint duration = 0, int position = 0);
 
     /**
      * @brief Sends the playlist.

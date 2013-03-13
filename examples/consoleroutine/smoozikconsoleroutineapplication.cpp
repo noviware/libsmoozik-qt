@@ -22,7 +22,7 @@
 
 #include <QTextStream>
 #include <iostream>
-#include "smoozikmanager.h" 
+#include "smoozikmanager.h"
 #include "smoozikxml.h"
 #include "config.h"
 
@@ -44,6 +44,7 @@ int SmoozikConsoleRoutineApplication::run() {
     reply = manager.login(USERNAME, PASSWORD);
     if (!xml.parse(reply)) {
         out << "An error occured while logging in.\n";
+        out << QString("Error #%1: %2\n").arg(xml.error()).arg(xml.errorMsg());
         exit(-1);
         return -1;
     }
@@ -54,6 +55,7 @@ int SmoozikConsoleRoutineApplication::run() {
     reply = manager.startParty();
     if (!xml.parse(reply)) {
         out << "An error occured while starting party.\n";
+        out << QString("Error #%1: %2\n").arg(xml.error()).arg(xml.errorMsg());
         exit(-1);
         return -1;
     }
@@ -74,6 +76,7 @@ int SmoozikConsoleRoutineApplication::run() {
     reply = manager.sendPlaylist(&playlist);
     if (!xml.parse(reply)) {
         out << "An error occured while sending playlist.\n";
+        out << QString("Error #%1: %2\n").arg(xml.error()).arg(xml.errorMsg());
         exit(-1);
         return -1;
     }
@@ -81,19 +84,40 @@ int SmoozikConsoleRoutineApplication::run() {
     out << "Playlist sent successfully.\n";
 
     //Set current track
-    int currentTrackPos = (playlist.count() * rand()) / RAND_MAX;
+    srand((uint) QDateTime::currentDateTime().toMSecsSinceEpoch());
+    int currentTrackPos = (playlist.count() * (rand() / 1000)) / (RAND_MAX / 1000);
     SmoozikTrack *currentTrack = playlist.value(currentTrackPos);
     reply = manager.setTrack(currentTrack);
     if (!xml.parse(reply)) {
         out << "An error occured while setting current track.\n";
+        out << QString("Error #%1: %2\n").arg(xml.error()).arg(xml.errorMsg());
         exit(-1);
         return -1;
     }
+
+    out << QString("Current track set successfully: %1\n").arg(currentTrack->name());
+
+    //Set coming track
+    int nextTrackPos = -1;
+    while (nextTrackPos < 0 || nextTrackPos == currentTrackPos) {
+        nextTrackPos = (playlist.count() * (rand() / 1000)) / (RAND_MAX / 1000);
+    }
+    SmoozikTrack *nextTrack = playlist.value(nextTrackPos);
+    reply = manager.setTrack(nextTrack, 1);
+    if (!xml.parse(reply)) {
+        out << "An error occured while setting coming track.\n";
+        out << QString("Error #%1: %2\n").arg(xml.error()).arg(xml.errorMsg());
+        exit(-1);
+        return -1;
+    }
+
+    out << QString("Coming track set successfully: %1\n").arg(nextTrack->name());
 
     //Retrieve top tracks
     reply = manager.getTopTracks();
     if (!xml.parse(reply)) {
         out << "An error occured while getting top tracks.\n";
+        out << QString("Error #%1: %2\n").arg(xml.error()).arg(xml.errorMsg());
         exit(-1);
         return -1;
     }

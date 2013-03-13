@@ -26,6 +26,7 @@
 class TestSmoozikManager : public QObject {
     Q_OBJECT
 private slots:
+    void constructors();
     void format();
     void login_data();
     void login();
