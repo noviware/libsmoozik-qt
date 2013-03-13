@@ -126,9 +126,9 @@ QVariant SmoozikXml::parseElement(const QDomElement &element) {
         return variant;
     }
 
-    //Case when element is an array
     QDomElement fe = element.firstChildElement();
-    if (!fe.nextSiblingElement(fe.tagName()).isNull()) {
+    //Case when element is an array (there is another element with same tag in list or item name is singular of parent name
+    if (!fe.nextSiblingElement(fe.tagName()).isNull() || element.tagName() == fe.tagName() + "s") {
         QVariantList list;
         for (QDomElement e = element.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
             QVariantMap map;

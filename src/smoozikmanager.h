@@ -200,7 +200,6 @@ public:
     /**
      * @brief Sets a track for the party.
      *
-     * If this track has already been sent (with setTrack() or sendPlaylist()), the localId is the only required field.
      * @param track Track to set
      * @param position Position of the track in playlist
      * @rights Managers only
@@ -222,6 +221,34 @@ public:
      * @rights Managers only
      */
     SMOOZIKLIB_EXPORT QNetworkReply *setTrack(const QString &localId, const QString &name, const QString &artistName = QString(), const QString &albumName = QString(), uint duration = 0, int position = 0);
+
+    /**
+     * @brief Unsets this track as currently playing or coming for the party.
+     *
+     * If a track has been set as current or coming with setTrack(), this function can be used to unset it.
+     * @param track Track to unset
+     * @rights Managers only
+     */
+    inline QNetworkReply *unsetTrack(const SmoozikTrack *track) {
+        return unsetTrack(track->localId());
+    }
+
+    /**
+     * @brief Unsets this track as currently playing or coming for the party.
+     *
+     * If a track has been set as current or coming with setTrack(), this function can be used to unset it.
+     * @param localId Id of the track to unset
+     * @rights Managers only
+     */
+    SMOOZIKLIB_EXPORT QNetworkReply *unsetTrack(const QString &localId);
+
+    /**
+     * @brief Unsets all tracks which are currently playing or coming for the party.
+     *
+     * If a track has been set as current or coming with setTrack(), this function can be used to unset it.
+     * @rights Managers only
+     */
+    SMOOZIKLIB_EXPORT QNetworkReply *unsetAllTracks();
 
     /**
      * @brief Sends the playlist.

@@ -68,6 +68,17 @@ QNetworkReply *SmoozikManager::setTrack(const QString &localId, const QString &n
     return request("setTrack", QMap<QString, QString>(), postParams);
 }
 
+QNetworkReply *SmoozikManager::unsetTrack(const QString &localId) {
+    QMap<QString, QString> postParams;
+    postParams.insert("localId", localId);
+
+    return request("unsetTrack", QMap<QString, QString>(), postParams);
+}
+
+QNetworkReply *SmoozikManager::unsetAllTracks() {
+    return request("unsetAllTracks");
+}
+
 QNetworkReply *SmoozikManager::sendPlaylist(const SmoozikPlaylist *playlist) {
     QDomDocument doc;
     QDomElement partytracksElement = doc.createElement("partytracks");

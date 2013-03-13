@@ -148,6 +148,82 @@ void TestSmoozikManager::setTrack() {
     QCOMPARE(xml.error(), SmoozikManager::NoError);
 }
 
+void TestSmoozikManager::unsetTrack() {
+    SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
+    SmoozikXml xml;
+    QNetworkReply *reply;
+
+    reply = manager.login(MANAGER_USERNAME, MANAGER_PASSWORD);
+    xml.parse(reply);
+    manager.setSessionKey(xml["sessionKey"].toString());
+    manager.startParty();
+
+    SmoozikPlaylist playlist;
+    playlist.addTrack("1", "track1", "artist1", "album1", 220);
+    playlist.addTrack("2", "track2", "artist2");
+    playlist.addTrack("3", "track3");
+    playlist.addTrack("4", "track4", "artist1", "album1", 220);
+    playlist.addTrack("5", "track5", "artist2");
+
+    manager.sendPlaylist(&playlist);
+
+    SmoozikTrack track1("1", "track1", this, "artist1", "album1", 220);
+    manager.setTrack(&track1);
+    manager.setTrack("2", QString(), QString(), QString(), 0, 1);
+    manager.setTrack("3", QString(), QString(), QString(), 0, 2);
+    manager.setTrack("4", QString(), QString(), QString(), 0, 3);
+    manager.setTrack("5", QString(), QString(), QString(), 0, 4);
+
+    reply = manager.getTopTracks();
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["tracks"].toList().isEmpty(), true);
+
+    reply = manager.unsetTrack(&track1);
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml.error(), SmoozikManager::NoError);
+
+    reply = manager.getTopTracks();
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["tracks"].toList().count(), 1);
+}
+
+void TestSmoozikManager::unsetAllTracks() {
+    SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
+    SmoozikXml xml;
+    QNetworkReply *reply;
+
+    reply = manager.login(MANAGER_USERNAME, MANAGER_PASSWORD);
+    xml.parse(reply);
+    manager.setSessionKey(xml["sessionKey"].toString());
+    manager.startParty();
+
+    SmoozikPlaylist playlist;
+    playlist.addTrack("1", "track1", "artist1", "album1", 220);
+    playlist.addTrack("2", "track2", "artist2");
+    playlist.addTrack("3", "track3");
+    playlist.addTrack("4", "track4", "artist1", "album1", 220);
+    playlist.addTrack("5", "track5", "artist2");
+
+    manager.sendPlaylist(&playlist);
+
+    manager.setTrack("1", QString(), QString(), QString(), 0, 0);
+    manager.setTrack("2", QString(), QString(), QString(), 0, 1);
+    manager.setTrack("3", QString(), QString(), QString(), 0, 2);
+    manager.setTrack("4", QString(), QString(), QString(), 0, 3);
+    manager.setTrack("5", QString(), QString(), QString(), 0, 4);
+
+    reply = manager.getTopTracks();
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["tracks"].toList().isEmpty(), true);
+
+    reply = manager.unsetAllTracks();
+    QCOMPARE(xml.parse(reply), true);
+
+    reply = manager.getTopTracks();
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["tracks"].toList().count(), 5);
+}
+
 void TestSmoozikManager::getTopTracks() {
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;

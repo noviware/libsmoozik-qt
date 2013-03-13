@@ -33,6 +33,8 @@ private slots:
     void startParty();
     void sendPlaylist();
     void setTrack();
+    void unsetTrack();
+    void unsetAllTracks();
     void getTopTracks();
 };
 
