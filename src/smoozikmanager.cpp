@@ -20,7 +20,15 @@
 
 #include "smoozikmanager.h"
 
-SmoozikManager::SmoozikManager(const QString &apiKey, QObject *parent, const QString &secret, const Format &format, bool blocking) :
+SmoozikManager::SmoozikManager(const QString &apiKey, const SmoozikManager::Format &format, bool blocking, QObject *parent) :
+QNetworkAccessManager(parent) {
+    setApiKey(apiKey);
+    setSecret(QString());
+    setFormat(format);
+    setBlocking(blocking);
+}
+
+SmoozikManager::SmoozikManager(const QString &apiKey, const QString &secret, const SmoozikManager::Format &format, bool blocking, QObject *parent) :
 QNetworkAccessManager(parent) {
     setApiKey(apiKey);
     setSecret(secret);

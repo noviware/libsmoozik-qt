@@ -128,7 +128,8 @@ public:
         SubscriptionOver = 19, /**< Your subscription is over */
         CannotParseSentData = 20 /**< Cannot parse sent data */
     };
-    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, QObject *parent = 0, const QString &secret = QString(), const Format &format = XML, bool blocking = true);
+    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const Format &format = XML, bool blocking = true, QObject *parent = 0);
+    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const QString &secret = QString(), const Format &format = XML, bool blocking = true, QObject *parent = 0);
 
     inline QString apiKey() const {
         return _apiKey;
