@@ -26,7 +26,7 @@
 class SmoozikConsoleRoutineApplication : public QCoreApplication {
 public:
     SmoozikConsoleRoutineApplication(int& argc, char* argv[]);
-    void run();
+    int run();
 };
 
 #endif // SMOOZIKCONSOLEROUTINEAPPLICATION_H

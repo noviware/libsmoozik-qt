@@ -30,7 +30,7 @@ SmoozikConsoleRoutineApplication::SmoozikConsoleRoutineApplication(int &argc, ch
 QCoreApplication(argc, argv) {
 }
 
-void SmoozikConsoleRoutineApplication::run() {
+int SmoozikConsoleRoutineApplication::run() {
     QTextStream out(stdout);
 
     out << "\n";
@@ -44,7 +44,8 @@ void SmoozikConsoleRoutineApplication::run() {
     reply = manager.login(USERNAME, PASSWORD);
     if (!xml.parse(reply)) {
         out << "An error occured while logging in.\n";
-        return exit(-1);
+        exit(-1);
+        return -1;
     }
 
     out << QString("Logged in '%1' venue.\n").arg(xml["place"].toMap()["name"].toString());
@@ -53,7 +54,8 @@ void SmoozikConsoleRoutineApplication::run() {
     reply = manager.startParty();
     if (!xml.parse(reply)) {
         out << "An error occured while starting party.\n";
-        return exit(-1);
+        exit(-1);
+        return -1;
     }
 
     out << QString("Party started. Private code is '%1'.\n").arg(xml["party"].toMap()["code"].toString());
@@ -72,7 +74,8 @@ void SmoozikConsoleRoutineApplication::run() {
     reply = manager.sendPlaylist(&playlist);
     if (!xml.parse(reply)) {
         out << "An error occured while sending playlist.\n";
-        return exit(-1);
+        exit(-1);
+        return -1;
     }
 
     out << "Playlist sent successfully.\n";
@@ -83,14 +86,16 @@ void SmoozikConsoleRoutineApplication::run() {
     reply = manager.setTrack(currentTrack);
     if (!xml.parse(reply)) {
         out << "An error occured while setting current track.\n";
-        return exit(-1);
+        exit(-1);
+        return -1;
     }
 
     //Retrieve top tracks
     reply = manager.getTopTracks();
     if (!xml.parse(reply)) {
         out << "An error occured while getting top tracks.\n";
-        return exit(-1);
+        exit(-1);
+        return -1;
     }
     SmoozikPlaylist topTracks(xml["tracks"].toList());
 
@@ -102,5 +107,6 @@ void SmoozikConsoleRoutineApplication::run() {
 
     out << "Console example finished.\n";
 
-    return exit(0);
+    exit(0);
+    return 0;
 }
