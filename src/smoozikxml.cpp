@@ -25,6 +25,12 @@ QObject(parent) {
     cleanError();
 }
 
+SmoozikXml::SmoozikXml(QNetworkReply *reply, QObject *parent) :
+QObject(parent) {
+    cleanError();
+    parse(reply);
+}
+
 void SmoozikXml::parse(const QDomElement &dataElement) {
     cleanError();
 

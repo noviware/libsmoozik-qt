@@ -22,6 +22,8 @@
 #define SMOOZIKSIMPLESTCLIENTWINDOW_H
 
 #include <QMainWindow>
+#include <QDir>
+#include "smoozikmanager.h"
 
 namespace Ui {
 class SmoozikSimplestClientWindow;
@@ -37,6 +39,42 @@ public:
 
 private:
     Ui::SmoozikSimplestClientWindow *ui;
+    SmoozikManager *smoozikManager;
+    /**
+     * @brief Adds tracks from @i directory to @i playlist.
+     * @retval 0 All tracks from folder were added to the playlist.
+     * @retval -1 All tracks were not added (either because an error occured or because playlist max size has been reached).
+     */
+    int addTracksToPlaylist(const QDir *directory, SmoozikPlaylist *playlist);
+
+private slots:
+    /**
+     * @brief Retrieves reply from network request and processes them.
+     * @param reply QNetworkReply to process
+     */
+    void processNetworkReply(QNetworkReply *reply);
+    /**
+     * @brief Retrieves username and password and uses them to log user in.
+     */
+    void submitLogin();
+    /**
+     * @brief Displays error message and requests new login.
+     */
+    void loginError(QString errorMsg);
+    /**
+     * @brief Asks user to select a folder containing music files until a non-empty playlist can be filled.
+     */
+    void retrieveTracksDialog();
+
+signals:
+    /**
+     * @brief This signal is emitted when user is correctly logged in and party is correctly started.
+     */
+    void ready();
+    /**
+     * @brief This signal is emitted when user request disconnection.
+     */
+    void disconnect();
 };
 
 #endif // SMOOZIKSIMPLESTCLIENTWINDOW_H

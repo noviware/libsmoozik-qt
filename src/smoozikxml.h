@@ -50,6 +50,11 @@ class SmoozikXml : public QObject {
 
 public:
     SMOOZIKLIB_EXPORT explicit SmoozikXml(QObject *parent = 0);
+    /**
+     * @brief Constructs a SmoozikXml and parses the reply.
+     * @sa parse()
+     */
+    SMOOZIKLIB_EXPORT explicit SmoozikXml(QNetworkReply *reply, QObject *parent = 0);
 
     inline SmoozikManager::Error error() const {
         return _error;

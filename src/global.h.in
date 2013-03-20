@@ -18,6 +18,7 @@
    along with libsmoozk-qt.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
@@ -29,12 +30,35 @@
 #  define SMOOZIKLIB_EXPORT Q_DECL_IMPORT
 #endif
 
+/**
+ * @brief Username used to test manager functions in unit tests.
+ */
 #define MANAGER_USERNAME ""
+/**
+ * @brief Password used to test manager functions in unit tests.
+ */
 #define MANAGER_PASSWORD ""
+/**
+ * @brief Username used to test member functions in unit tests.
+ */
 #define MEMBER_USERNAME ""
+/**
+ * @brief Password used to test member functions in unit tests.
+ */
 #define MEMBER_PASSWORD ""
+/**
+ * @brief API key used to test functions in unit tests.
+ */
 #define APIKEY ""
+/**
+ * @brief Secret used to test functions in unit tests.
+ */
 #define SECRET ""
+/**
+ * @brief This is the max advised size of a playlist for user experience to stay enjoyable on mobile phones.
+ *
+ * Too long playlists would lag on certain mobile phones.
+ */
+#define MAX_ADVISED_PLAYLIST_SIZE 200
 
 #endif // GLOBAL_H
-

@@ -20,15 +20,187 @@
 
 #include "smooziksimplestclientwindow.h"
 #include "ui_smooziksimplestclientwindow.h"
+#include "config.h"
+#include "smoozikxml.h"
+#include "fileref.h"
+#include "tag.h"
+
+#include <QStateMachine>
+#include <QStandardPaths>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QMediaPlayer>
+#include <QDebug>
 
 SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::SmoozikSimplestClientWindow)
-{
+QMainWindow(parent),
+ui(new Ui::SmoozikSimplestClientWindow) {
     ui->setupUi(this);
+
+    // Initialize SmoozikManager
+    smoozikManager = new SmoozikManager(APIKEY, SECRET, SmoozikManager::XML, false, this);
+    connect(smoozikManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(processNetworkReply(QNetworkReply*)));
+
+    // Initialize main state machine which controls what is displayed
+    QStateMachine *stateMachine = new QStateMachine(this);
+    QState *loginState = new QState(stateMachine);
+    QState *retrieveTracksState = new QState(stateMachine);
+    QState *playerState = new QState(stateMachine);
+    QState *playingState = new QState(playerState);
+    QState *pausedState = new QState(playerState);
+
+    // Define state transitions
+    stateMachine->setInitialState(loginState);
+    loginState->addTransition(this, SIGNAL(ready()), retrieveTracksState);
+    retrieveTracksState->addTransition(this, SIGNAL(disconnect()), loginState);
+
+    // Define state properties
+    loginState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->loginPage));
+    loginState->assignProperty(ui->loginButton, "enabled", true);
+    loginState->assignProperty(ui->usernameLineEdit, "enabled", true);
+    loginState->assignProperty(ui->passwordLineEdit, "enabled", true);
+    loginState->assignProperty(ui->loginStateLabel, "text", QString());
+
+    retrieveTracksState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->loadingPage));
+    retrieveTracksState->assignProperty(ui->loadingLabel, "text", tr("Retrieving tracks..."));
+
+    // Connect gui and actions
+    connect(ui->usernameLineEdit, SIGNAL(returnPressed()), this, SLOT(submitLogin()));
+    connect(ui->passwordLineEdit, SIGNAL(returnPressed()), this, SLOT(submitLogin()));
+    connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(submitLogin()));
+
+    // Start state machine
+    stateMachine->start();
 }
 
-SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow()
-{
+SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow() {
     delete ui;
+}
+
+int SmoozikSimplestClientWindow::addTracksToPlaylist(const QDir *directory, SmoozikPlaylist *playlist) {
+
+    foreach(QString fileName, directory->entryList()) {
+
+        if (fileName != ".." && fileName != ".") {
+            QString fullPathFileName = directory->filePath(fileName);
+
+            QFileInfo fileInfo(fullPathFileName);
+
+            // If it is a directory, use addTracksToPlaylist recursively.
+            if (fileInfo.isDir()) {
+                QDir subdirectory(fullPathFileName);
+                if (addTracksToPlaylist(&subdirectory, playlist) == -1) {
+                    return -1;
+                }
+            }
+                // Else try to add track to playlist.
+            else {
+
+                TagLib::FileRef mediaFileRef(QFile::encodeName(fullPathFileName).constData());
+                if (!mediaFileRef.isNull()) {
+
+                    QString name, artist, album;
+                    name = TStringToQString(mediaFileRef.tag()->title());
+                    artist = TStringToQString(mediaFileRef.tag()->artist());
+                    album = TStringToQString(mediaFileRef.tag()->album());
+
+                    if (name != QString()) {
+                        playlist->addTrack(fullPathFileName, name, artist, album);
+
+                        if (playlist->size() >= MAX_ADVISED_PLAYLIST_SIZE) {
+
+                            QMessageBox messageBox(QMessageBox::Warning, tr("Max playlist size reached."), tr("Max playlist size of %1 tracks has been reached. Not all tracks were added to the playlist.").arg(MAX_ADVISED_PLAYLIST_SIZE));
+                            messageBox.exec();
+                            return -1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+
+}
+
+void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply) {
+    QString path = reply->url().path();
+    SmoozikXml xml(reply);
+
+    // Process different cases of request
+
+    //Login case
+    if (path.endsWith("api/login", Qt::CaseInsensitive)) {
+        if (xml.error() == 0) {
+
+            //Retrieve sessionKey
+            smoozikManager->setSessionKey(xml["sessionKey"].toString());
+
+            // Starting party
+            ui->loginStateLabel->setText(tr("Starting party..."));
+            qApp->processEvents();
+            smoozikManager->startParty();
+        } else {
+            loginError(xml.errorMsg());
+        }
+    }//Start party case
+    else if (path.endsWith("api/startParty", Qt::CaseInsensitive)) {
+        if (xml.error() == 0) {
+            ui->loginStateLabel->setText(tr("Connected"));
+            emit ready();
+            retrieveTracksDialog();
+        } else {
+            loginError(xml.errorMsg());
+        }
+    }
+}
+
+void SmoozikSimplestClientWindow::submitLogin() {
+    ui->loginButton->setEnabled(false);
+    ui->usernameLineEdit->setEnabled(false);
+    ui->passwordLineEdit->setEnabled(false);
+    ui->loginStateLabel->setText(tr("Connecting..."));
+    qApp->processEvents();
+    QString username = ui->usernameLineEdit->text();
+    QString password = ui->passwordLineEdit->text();
+    smoozikManager->login(username, password);
+}
+
+void SmoozikSimplestClientWindow::loginError(QString errorMsg) {
+    ui->loginButton->setEnabled(true);
+    ui->usernameLineEdit->setEnabled(true);
+    ui->passwordLineEdit->setEnabled(true);
+    ui->loginStateLabel->setText(errorMsg);
+}
+
+void SmoozikSimplestClientWindow::retrieveTracksDialog() {
+    SmoozikPlaylist playlist;
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    QDir directory(QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
+#else
+    QDir directory(QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
+#endif
+    while (playlist.isEmpty()) {
+        QFileDialog dialog(0, tr("Select folder"), directory.path(), "Directories");
+        dialog.setFileMode(QFileDialog::Directory);
+        dialog.setOption(QFileDialog::ShowDirsOnly, true);
+        if (dialog.exec()) {
+            directory = QDir(dialog.selectedFiles().value(0));
+
+            addTracksToPlaylist(&directory, &playlist);
+
+            if (playlist.isEmpty()) {
+                QMessageBox messageBox(QMessageBox::Warning, tr("No valid track in this directory."), tr("No valid track in this directory."));
+                messageBox.exec();
+            }
+        } else {
+            emit disconnect();
+            return;
+        }
+    }
+
+    for (int i = 0; i < playlist.size(); i++) {
+        SmoozikTrack *track = playlist.value(i);
+        qDebug() << track->name() << track->artist() << track->album();
+    }
 }

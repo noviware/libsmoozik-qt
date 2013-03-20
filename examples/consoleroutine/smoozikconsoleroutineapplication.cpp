@@ -38,7 +38,7 @@ int SmoozikConsoleRoutineApplication::run() {
 
     SmoozikManager manager(APIKEY, SECRET);
     SmoozikXml xml;
-    QNetworkReply * reply = NULL;
+    QNetworkReply *reply = NULL;
 
     // Login
     reply = manager.login(USERNAME, PASSWORD);
