@@ -23,8 +23,6 @@
 #include "simplehttpserver.h"
 
 void TestSmoozikXml::serverUnreachable() {
-    SmoozikXml *xml = new SmoozikXml(this);
-
     QNetworkAccessManager manager;
     QNetworkRequest request(QUrl("invalidurl"));
     QEventLoop loop;
@@ -32,7 +30,7 @@ void TestSmoozikXml::serverUnreachable() {
     QNetworkReply *reply = manager.get(request);
     loop.exec();
 
-    QCOMPARE(xml->parse(reply), false);
+    SmoozikXml *xml = new SmoozikXml(reply, this);
     QCOMPARE(xml->error(), SmoozikManager::ServerUnreachable);
     QCOMPARE(xml->errorMsg(), tr("Could not reach server."));
 }

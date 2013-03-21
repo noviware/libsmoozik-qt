@@ -208,7 +208,7 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
     postData.addQueryItem("sig", sig);
 
     //Define method url
-    QUrl pageUrl = QUrl("http://localhost/smoozik.com/public_html/index.php/api/" + method);
+    QUrl pageUrl = QUrl("http://www.smoozik.com/index.php/api/" + method);
 
     //Encode data
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
