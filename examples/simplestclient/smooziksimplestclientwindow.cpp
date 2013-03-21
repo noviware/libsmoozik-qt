@@ -126,7 +126,6 @@ int SmoozikSimplestClientWindow::addTracksToPlaylist(const QDir *directory, Smoo
 void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply) {
     QString path = reply->url().path();
     SmoozikXml xml(reply);
-
     // Process different cases of request
 
     //Login case
@@ -143,12 +142,34 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply) {
         } else {
             loginError(xml.errorMsg());
         }
-    }//Start party case
+    }
+
+    //Start party case
     else if (path.endsWith("api/startParty", Qt::CaseInsensitive)) {
         if (xml.error() == 0) {
             ui->loginStateLabel->setText(tr("Connected"));
             emit ready();
             retrieveTracksDialog();
+        } else {
+            loginError(xml.errorMsg());
+        }
+    }
+
+    //Send playlist case
+    else if (path.endsWith("api/sendPlaylist", Qt::CaseInsensitive)) {
+        if (xml.error() == 0) {
+            ui->loadingLabel->setText(tr("Get top tracks..."));
+            qApp->processEvents();
+            smoozikManager->getTopTracks();
+        } else {
+            loginError(xml.errorMsg());
+        }
+    }
+
+    //Get top tracks case
+    else if (path.endsWith("api/getTopTracks", Qt::CaseInsensitive)) {
+        if (xml.error() == 0) {
+            // Set mediaPlaylist from top tracks.
         } else {
             loginError(xml.errorMsg());
         }
@@ -167,6 +188,7 @@ void SmoozikSimplestClientWindow::submitLogin() {
 }
 
 void SmoozikSimplestClientWindow::loginError(QString errorMsg) {
+    emit disconnect();
     ui->loginButton->setEnabled(true);
     ui->usernameLineEdit->setEnabled(true);
     ui->passwordLineEdit->setEnabled(true);
@@ -199,8 +221,7 @@ void SmoozikSimplestClientWindow::retrieveTracksDialog() {
         }
     }
 
-    for (int i = 0; i < playlist.size(); i++) {
-        SmoozikTrack *track = playlist.value(i);
-        qDebug() << track->name() << track->artist() << track->album();
-    }
+    ui->loadingLabel->setText(tr("Sending playlist..."));
+    qApp->processEvents();
+    smoozikManager->sendPlaylist(&playlist);
 }
