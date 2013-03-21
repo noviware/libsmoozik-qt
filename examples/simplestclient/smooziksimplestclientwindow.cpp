@@ -26,10 +26,15 @@
 #include "tag.h"
 
 #include <QStateMachine>
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#include <phonon/MediaController>
+#include <QDesktopServices>
+#else
+#include <QMediaPlayer>
 #include <QStandardPaths>
+#endif
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QMediaPlayer>
 #include <QDebug>
 
 SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
@@ -198,7 +203,7 @@ void SmoozikSimplestClientWindow::loginError(QString errorMsg) {
 void SmoozikSimplestClientWindow::retrieveTracksDialog() {
     SmoozikPlaylist playlist;
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QDir directory(QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
+    QDir directory(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 #else
     QDir directory(QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
 #endif

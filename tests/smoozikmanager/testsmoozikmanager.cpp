@@ -115,10 +115,10 @@ void TestSmoozikManager::sendPlaylist() {
 
     SmoozikPlaylist playlist;
     playlist.addTrack("1", "track1", "artist1", "album1", 220);
-    playlist.addTrack("2", "track2", "artist2");
+    playlist.addTrack("2", "track2+&= \"~-/\\:.//%2B%25%41", "artist2+&= \"~-/\\:.//%2B");
     playlist.addTrack("3", "track3");
     playlist.addTrack("4", "track4", "artist1", "album1", 220);
-    playlist.addTrack("5", "track5", "artist2");
+    playlist.addTrack("5", "track5", "artist2+&= \"~-/\\:.//%2B");
 
     reply = manager.sendPlaylist(&playlist);
     QCOMPARE(xml.parse(reply), true);

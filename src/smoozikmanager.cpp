@@ -161,7 +161,13 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
     while (i.hasNext()) {
         i.next();
         if (!i.value().isEmpty()) {
-            postData.addQueryItem(i.key(), i.value());
+            QString key = i.key();
+            QString value = i.value();
+
+            //Percent characters are encoded manually as they are not encoded by Qt encode function.
+            key.replace(QByteArray("%"), QByteArray("%25"));
+            value.replace(QByteArray("%"), QByteArray("%25"));
+            postData.addQueryItem(key, value);
             if (i.key() != "sig")
                 keyList << i.key();
         }
@@ -176,7 +182,13 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
     while (j.hasNext()) {
         j.next();
         if (!j.value().isEmpty()) {
-            getData.addQueryItem(j.key(), j.value());
+            QString key = j.key();
+            QString value = j.value();
+
+            //Percent characters are encoded manually as they are not encoded by Qt encode function.
+            key.replace(QByteArray("%"), QByteArray("%25"));
+            value.replace(QByteArray("%"), QByteArray("%25"));
+            getData.addQueryItem(key, value);
             if (j.key() != "sig")
                 keyList << j.key();
         }
@@ -190,26 +202,29 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
         sigParams += key + getParams[key].toUtf8() + postParams[key].toUtf8();
     }
 
-    QString sig = QCryptographicHash::hash(sigParams + secret().toUtf8(), QCryptographicHash::Md5).toHex();
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(sigParams + secret().toUtf8());
+    QString sig = hash.result().toHex();
     postData.addQueryItem("sig", sig);
 
     //Define method url
-    QUrl pageUrl = QUrl("http://www.smoozik.com/index.php/api/" + method);
+    QUrl pageUrl = QUrl("http://localhost/smoozik.com/public_html/index.php/api/" + method);
+
+    //Encode data
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    QByteArray encodedGetData = getData.encodedQuery().replace(QByteArray("+"), QByteArray("%2B"));
+    QByteArray encodedPostData = postData.encodedQuery().replace(QByteArray("+"), QByteArray("%2B"));
+#else
+    QByteArray encodedGetData = getData.query(QUrl::FullyEncoded).toUtf8().replace(QByteArray("+"), QByteArray("%2B"));
+    QByteArray encodedPostData = postData.query(QUrl::FullyEncoded).toUtf8().replace(QByteArray("+"), QByteArray("%2B"));
+#endif
 
     //Construct request
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    request.setUrl(pageUrl.toString() + "?" + getData.encodedQuery());
-#else
-    request.setUrl(pageUrl.toString() + "?" + getData.query(QUrl::FullyEncoded).toUtf8());
-#endif
+    request.setUrl(pageUrl.toString() + "?" + encodedGetData);
 
     QEventLoop loop;
     connect(this, SIGNAL(finished(QNetworkReply*)), &loop, SLOT(quit()));
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QNetworkReply *reply = post(request, postData.encodedQuery());
-#else
-    QNetworkReply *reply = post(request, postData.query(QUrl::FullyEncoded).toUtf8());
-#endif
+    QNetworkReply *reply = post(request, encodedPostData);
     if (blocking()) {
         loop.exec();
     }

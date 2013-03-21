@@ -1,9 +1,9 @@
 include(../../common.pri)
 include(../../3rdparty/taglib.pri)
 
-QT += core network xml multimedia
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-lessThan(QT_MAJOR_VERSION, 5): QT += gui
+QT += core network xml
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
+lessThan(QT_MAJOR_VERSION, 5): QT += gui phonon
 
 TARGET = simplestclient
 TEMPLATE = app
