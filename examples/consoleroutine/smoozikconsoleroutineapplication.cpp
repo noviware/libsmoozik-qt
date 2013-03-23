@@ -27,10 +27,12 @@
 #include "config.h"
 
 SmoozikConsoleRoutineApplication::SmoozikConsoleRoutineApplication(int &argc, char *argv[]) :
-QCoreApplication(argc, argv) {
+    QCoreApplication(argc, argv)
+{
 }
 
-int SmoozikConsoleRoutineApplication::run() {
+int SmoozikConsoleRoutineApplication::run()
+{
     QTextStream out(stdout);
 
     out << "\n";

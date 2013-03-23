@@ -22,7 +22,8 @@
 #include "smoozikxml.h"
 #include "simplehttpserver.h"
 
-void TestSmoozikXml::serverUnreachable() {
+void TestSmoozikXml::serverUnreachable()
+{
     QNetworkAccessManager manager;
     QNetworkRequest request(QUrl("invalidurl"));
     QEventLoop loop;
@@ -35,7 +36,8 @@ void TestSmoozikXml::serverUnreachable() {
     QCOMPARE(xml->errorMsg(), tr("Could not reach server."));
 }
 
-void TestSmoozikXml::parse_data() {
+void TestSmoozikXml::parse_data()
+{
     QTest::addColumn<QString>("response");
     QTest::addColumn<bool>("parseResult");
     QTest::addColumn<int>("errorResult");
@@ -53,7 +55,8 @@ void TestSmoozikXml::parse_data() {
     QTest::newRow("Valid data") << "<smoozik><status>ok</status><data><xml></xml></data></smoozik>" << true << (int) SmoozikManager::NoError << QString();
 }
 
-void TestSmoozikXml::parse() {
+void TestSmoozikXml::parse()
+{
     QFETCH(QString, response);
     QFETCH(bool, parseResult);
     QFETCH(int, errorResult);
@@ -81,7 +84,8 @@ void TestSmoozikXml::parse() {
 #endif
 }
 
-void TestSmoozikXml::operators_data() {
+void TestSmoozikXml::operators_data()
+{
     QTest::addColumn<QString>("response");
     QTest::addColumn<bool>("toMap");
     QTest::addColumn<bool>("toList");
@@ -92,7 +96,8 @@ void TestSmoozikXml::operators_data() {
     QTest::newRow("String response") << "<smoozik><status>ok</status><data>hello</data></smoozik>" << false << false << QString("hello");
 }
 
-void TestSmoozikXml::operators() {
+void TestSmoozikXml::operators()
+{
     QFETCH(QString, response);
     QFETCH(bool, toMap);
     QFETCH(bool, toList);

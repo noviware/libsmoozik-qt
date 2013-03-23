@@ -27,7 +27,8 @@
 #include <QJsonDocument>
 #endif
 
-void TestSmoozikManager::constructors() {
+void TestSmoozikManager::constructors()
+{
     SmoozikManager manager(APIKEY);
     QCOMPARE(manager.apiKey(), QString(APIKEY));
     QCOMPARE(manager.secret(), QString());
@@ -37,7 +38,8 @@ void TestSmoozikManager::constructors() {
     QCOMPARE(manager2.secret(), QString(SECRET));
 }
 
-void TestSmoozikManager::format() {
+void TestSmoozikManager::format()
+{
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     QNetworkReply *reply = manager.login(MEMBER_USERNAME, MEMBER_PASSWORD);
     QDomDocument xml;
@@ -52,7 +54,8 @@ void TestSmoozikManager::format() {
 #endif
 }
 
-void TestSmoozikManager::login_data() {
+void TestSmoozikManager::login_data()
+{
     QTest::addColumn<QString>("username");
     QTest::addColumn<QString>("password");
     QTest::addColumn<bool>("parseResult");
@@ -67,7 +70,8 @@ void TestSmoozikManager::login_data() {
     QTest::newRow("Success (manager)") << MANAGER_USERNAME << MANAGER_PASSWORD << true << (int) SmoozikManager::NoError << false << false;
 }
 
-void TestSmoozikManager::login() {
+void TestSmoozikManager::login()
+{
     QFETCH(QString, username);
     QFETCH(QString, password);
     QFETCH(bool, parseResult);
@@ -86,7 +90,8 @@ void TestSmoozikManager::login() {
     QCOMPARE(xml["place"].isNull(), placeNull);
 }
 
-void TestSmoozikManager::startParty() {
+void TestSmoozikManager::startParty()
+{
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;
@@ -103,7 +108,8 @@ void TestSmoozikManager::startParty() {
     QCOMPARE(xml["party"].isNull(), false);
 }
 
-void TestSmoozikManager::sendPlaylist() {
+void TestSmoozikManager::sendPlaylist()
+{
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;
@@ -125,7 +131,8 @@ void TestSmoozikManager::sendPlaylist() {
     QCOMPARE(xml.error(), SmoozikManager::NoError);
 }
 
-void TestSmoozikManager::setTrack() {
+void TestSmoozikManager::setTrack()
+{
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;
@@ -148,7 +155,8 @@ void TestSmoozikManager::setTrack() {
     QCOMPARE(xml.error(), SmoozikManager::NoError);
 }
 
-void TestSmoozikManager::unsetTrack() {
+void TestSmoozikManager::unsetTrack()
+{
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;
@@ -187,7 +195,8 @@ void TestSmoozikManager::unsetTrack() {
     QCOMPARE(xml["tracks"].toList().count(), 1);
 }
 
-void TestSmoozikManager::unsetAllTracks() {
+void TestSmoozikManager::unsetAllTracks()
+{
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;
@@ -224,7 +233,8 @@ void TestSmoozikManager::unsetAllTracks() {
     QCOMPARE(xml["tracks"].toList().count(), 5);
 }
 
-void TestSmoozikManager::getTopTracks() {
+void TestSmoozikManager::getTopTracks()
+{
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
     SmoozikXml xml;
     QNetworkReply *reply;

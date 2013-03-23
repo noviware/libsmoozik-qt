@@ -22,7 +22,8 @@
 #include "smooziktrack.h"
 #include "smoozikxml.h"
 
-void TestSmoozikTrack::constructors() {
+void TestSmoozikTrack::constructors()
+{
     QString str = "<track><localId>1</localId><name>track1</name></track>";
     QDomDocument doc;
     doc.setContent(str);

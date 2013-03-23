@@ -23,7 +23,8 @@
 
 #include <QtTest>
 
-class TestSmoozikManager : public QObject {
+class TestSmoozikManager : public QObject
+{
     Q_OBJECT
 private slots:
     void constructors();

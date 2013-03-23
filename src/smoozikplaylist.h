@@ -31,7 +31,8 @@
 /**
  * @brief The SmoozikPlaylist class represents a collection of track
  */
-class SmoozikPlaylist : public QObject {
+class SmoozikPlaylist : public QObject
+{
     Q_OBJECT
 
 public:

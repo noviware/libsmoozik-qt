@@ -25,7 +25,8 @@
 #include <QDir>
 #include "smoozikmanager.h"
 
-namespace Ui {
+namespace Ui
+{
 class SmoozikSimplestClientWindow;
 }
 

@@ -23,11 +23,13 @@
 #include <QStringList>
 
 SimpleHttpServer::SimpleHttpServer(quint16 port, QObject* parent) :
-QTcpServer(parent) {
+    QTcpServer(parent)
+{
     listen(QHostAddress("127.0.0.1"), port);
 }
 
-void SimpleHttpServer::incomingConnection(int socket) {
+void SimpleHttpServer::incomingConnection(int socket)
+{
     // When a new client connects, the server constructs a QTcpSocket and all
     // communication with the client is done over this QTcpSocket. QTcpSocket
     // works asynchronously, this means that all the communication is done
@@ -38,7 +40,8 @@ void SimpleHttpServer::incomingConnection(int socket) {
     s->setSocketDescriptor(socket);
 }
 
-void SimpleHttpServer::readClient() {
+void SimpleHttpServer::readClient()
+{
     // This slot is called when the client sent data to the server. The
     // server looks if it was a get request and sends a very simple HTML
     // document back.
@@ -49,9 +52,9 @@ void SimpleHttpServer::readClient() {
             QTextStream os(socket);
             os.setAutoDetectUnicode(true);
             os << "HTTP/1.0 200 Ok\r\n"
-                    "Content-Type: text/html; charset=\"utf-8\"\r\n"
-                    "\r\n"
-                    << response() << "\n";
+               "Content-Type: text/html; charset=\"utf-8\"\r\n"
+               "\r\n"
+               << response() << "\n";
             socket->close();
 
             if (socket->state() == QTcpSocket::UnconnectedState) {
@@ -61,7 +64,8 @@ void SimpleHttpServer::readClient() {
     }
 }
 
-void SimpleHttpServer::discardClient() {
+void SimpleHttpServer::discardClient()
+{
     QTcpSocket* socket = (QTcpSocket*) sender();
     socket->deleteLater();
 }

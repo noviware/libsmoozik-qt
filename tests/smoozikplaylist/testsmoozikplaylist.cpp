@@ -22,7 +22,8 @@
 #include "smoozikplaylist.h"
 #include "smoozikxml.h"
 
-void TestSmoozikPlaylist::constructors() {
+void TestSmoozikPlaylist::constructors()
+{
     SmoozikPlaylist playlist;
     QCOMPARE(playlist.isEmpty(), true);
 
@@ -55,7 +56,8 @@ void TestSmoozikPlaylist::constructors() {
     QCOMPARE(playlist5.isEmpty(), true);
 }
 
-void TestSmoozikPlaylist::addTrack() {
+void TestSmoozikPlaylist::addTrack()
+{
     SmoozikPlaylist playlist;
     playlist.addTrack("1", "track1", "artist1", "album1", 220);
     QCOMPARE(playlist.first()->localId(), QString("1"));
@@ -77,7 +79,8 @@ void TestSmoozikPlaylist::addTrack() {
     QCOMPARE(playlist.count(), 2);
 }
 
-void TestSmoozikPlaylist::addTracks() {
+void TestSmoozikPlaylist::addTracks()
+{
     SmoozikPlaylist playlist;
     QCOMPARE(playlist.isEmpty(), true);
     QCOMPARE(playlist.count(), 0);
@@ -108,7 +111,8 @@ void TestSmoozikPlaylist::addTracks() {
     QCOMPARE(playlist.count(), 3);
 }
 
-void TestSmoozikPlaylist::qListAggregation() {
+void TestSmoozikPlaylist::qListAggregation()
+{
     SmoozikPlaylist playlist;
     QCOMPARE(playlist.isEmpty(), true);
 
@@ -150,7 +154,8 @@ void TestSmoozikPlaylist::qListAggregation() {
     QCOMPARE(playlist.isEmpty(), true);
 }
 
-void TestSmoozikPlaylist::deleteTracks() {
+void TestSmoozikPlaylist::deleteTracks()
+{
     SmoozikPlaylist *playlist = new SmoozikPlaylist(this);
     playlist->addTrack("1", "track1", "artist1", "album1", 220);
     SmoozikTrack *track1 = playlist->first();
@@ -170,7 +175,8 @@ void TestSmoozikPlaylist::deleteTracks() {
     QCOMPARE(spy3.count(), 1);
 }
 
-void TestSmoozikPlaylist::childrenDeletion() {
+void TestSmoozikPlaylist::childrenDeletion()
+{
     SmoozikPlaylist *playlist = new SmoozikPlaylist(this);
     playlist->addTrack("1", "track1", "artist1", "album1", 220);
     SmoozikTrack *track1 = playlist->first();

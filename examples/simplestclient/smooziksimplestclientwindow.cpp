@@ -38,8 +38,9 @@
 #include <QDebug>
 
 SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
-QMainWindow(parent),
-ui(new Ui::SmoozikSimplestClientWindow) {
+    QMainWindow(parent),
+    ui(new Ui::SmoozikSimplestClientWindow)
+{
     ui->setupUi(this);
 
     // Initialize SmoozikManager
@@ -78,11 +79,13 @@ ui(new Ui::SmoozikSimplestClientWindow) {
     stateMachine->start();
 }
 
-SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow() {
+SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow()
+{
     delete ui;
 }
 
-int SmoozikSimplestClientWindow::addTracksToPlaylist(const QDir *directory, SmoozikPlaylist *playlist) {
+int SmoozikSimplestClientWindow::addTracksToPlaylist(const QDir *directory, SmoozikPlaylist *playlist)
+{
 
     foreach(QString fileName, directory->entryList()) {
 
@@ -98,7 +101,7 @@ int SmoozikSimplestClientWindow::addTracksToPlaylist(const QDir *directory, Smoo
                     return -1;
                 }
             }
-                // Else try to add track to playlist.
+            // Else try to add track to playlist.
             else {
 
                 TagLib::FileRef mediaFileRef(QFile::encodeName(fullPathFileName).constData());
@@ -128,7 +131,8 @@ int SmoozikSimplestClientWindow::addTracksToPlaylist(const QDir *directory, Smoo
 
 }
 
-void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply) {
+void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
+{
     QString path = reply->url().path();
     SmoozikXml xml(reply);
     // Process different cases of request
@@ -181,7 +185,8 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply) {
     }
 }
 
-void SmoozikSimplestClientWindow::submitLogin() {
+void SmoozikSimplestClientWindow::submitLogin()
+{
     ui->loginButton->setEnabled(false);
     ui->usernameLineEdit->setEnabled(false);
     ui->passwordLineEdit->setEnabled(false);
@@ -192,7 +197,8 @@ void SmoozikSimplestClientWindow::submitLogin() {
     smoozikManager->login(username, password);
 }
 
-void SmoozikSimplestClientWindow::loginError(QString errorMsg) {
+void SmoozikSimplestClientWindow::loginError(QString errorMsg)
+{
     emit disconnect();
     ui->loginButton->setEnabled(true);
     ui->usernameLineEdit->setEnabled(true);
@@ -200,7 +206,8 @@ void SmoozikSimplestClientWindow::loginError(QString errorMsg) {
     ui->loginStateLabel->setText(errorMsg);
 }
 
-void SmoozikSimplestClientWindow::retrieveTracksDialog() {
+void SmoozikSimplestClientWindow::retrieveTracksDialog()
+{
     SmoozikPlaylist playlist;
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     QDir directory(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));

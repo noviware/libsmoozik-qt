@@ -21,23 +21,27 @@
 #include "smoozikxml.h"
 
 SmoozikXml::SmoozikXml(QObject *parent) :
-QObject(parent) {
+    QObject(parent)
+{
     cleanError();
 }
 
 SmoozikXml::SmoozikXml(QNetworkReply *reply, QObject *parent) :
-QObject(parent) {
+    QObject(parent)
+{
     cleanError();
     parse(reply);
 }
 
-void SmoozikXml::parse(const QDomElement &dataElement) {
+void SmoozikXml::parse(const QDomElement &dataElement)
+{
     cleanError();
 
     _parsed = parseElement(dataElement);
 }
 
-bool SmoozikXml::parse(QNetworkReply *reply) {
+bool SmoozikXml::parse(QNetworkReply *reply)
+{
     cleanError();
 
     QByteArray xmlReply = reply->readAll();
@@ -109,21 +113,24 @@ bool SmoozikXml::parse(QNetworkReply *reply) {
     return true;
 }
 
-QVariant SmoozikXml::operator [](const QString &key) const {
+QVariant SmoozikXml::operator [](const QString &key) const
+{
     if (!_parsed.toMap().isEmpty()) {
         return _parsed.toMap()[key];
     }
     return QVariant();
 }
 
-QVariant SmoozikXml::operator [](const int i) const {
+QVariant SmoozikXml::operator [](const int i) const
+{
     if (!_parsed.toList().isEmpty()) {
         return _parsed.toList().value(i);
     }
     return QVariant();
 }
 
-QVariant SmoozikXml::parseElement(const QDomElement &element) {
+QVariant SmoozikXml::parseElement(const QDomElement &element)
+{
     QVariant variant;
     // Case when element is text
     QDomText t = element.firstChild().toText();
@@ -156,7 +163,8 @@ QVariant SmoozikXml::parseElement(const QDomElement &element) {
     return variant;
 }
 
-QString SmoozikXml::printVariant(const QVariant &variant, const int indentCount) {
+QString SmoozikXml::printVariant(const QVariant &variant, const int indentCount)
+{
     QString res;
     QString tab = "    ";
     QString indent;
@@ -187,7 +195,8 @@ QString SmoozikXml::printVariant(const QVariant &variant, const int indentCount)
     return res;
 }
 
-void SmoozikXml::cleanError() {
+void SmoozikXml::cleanError()
+{
     _error = SmoozikManager::NoError;
     _errorMsg = QString();
 }

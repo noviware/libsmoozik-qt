@@ -22,30 +22,36 @@
 #include "smoozikxml.h"
 
 SmoozikPlaylist::SmoozikPlaylist(QObject *parent) :
-QObject(parent) {
+    QObject(parent)
+{
 }
 
 SmoozikPlaylist::SmoozikPlaylist(const QDomDocument &doc, QObject *parent) :
-QObject(parent) {
+    QObject(parent)
+{
     addTracks(doc);
 }
 
 SmoozikPlaylist::SmoozikPlaylist(const QVariantList &list, QObject *parent) :
-QObject(parent) {
+    QObject(parent)
+{
     addTracks(list);
 }
 
-void SmoozikPlaylist::addTrack(SmoozikTrack *track) {
+void SmoozikPlaylist::addTrack(SmoozikTrack *track)
+{
     if (!contains(track->localId())) {
         _list.append(track);
     }
 }
 
-void SmoozikPlaylist::addTracks(const QDomDocument &doc) {
+void SmoozikPlaylist::addTracks(const QDomDocument &doc)
+{
     return addTracks(SmoozikXml::parseElement(doc.firstChildElement()).toList());
 }
 
-void SmoozikPlaylist::addTracks(const QVariantList &list) {
+void SmoozikPlaylist::addTracks(const QVariantList &list)
+{
 
     foreach(QVariant variant, list) {
         if (!variant.toMap().isEmpty()) {
@@ -56,7 +62,8 @@ void SmoozikPlaylist::addTracks(const QVariantList &list) {
     }
 }
 
-bool SmoozikPlaylist::contains(const QString &localId) const {
+bool SmoozikPlaylist::contains(const QString &localId) const
+{
 
     foreach(SmoozikTrack *track, _list) {
         if (track->localId() == localId) {
@@ -66,7 +73,8 @@ bool SmoozikPlaylist::contains(const QString &localId) const {
     return false;
 }
 
-int SmoozikPlaylist::indexOf(const QString &localId) const {
+int SmoozikPlaylist::indexOf(const QString &localId) const
+{
     int listCount = count();
     for (int i = 0; i < listCount; i++) {
         if (value(i)->localId() == localId) {

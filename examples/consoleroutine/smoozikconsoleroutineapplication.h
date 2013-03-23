@@ -23,7 +23,8 @@
 
 #include <QCoreApplication>
 
-class SmoozikConsoleRoutineApplication : public QCoreApplication {
+class SmoozikConsoleRoutineApplication : public QCoreApplication
+{
 public:
     SmoozikConsoleRoutineApplication(int& argc, char* argv[]);
     int run();

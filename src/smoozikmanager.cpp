@@ -21,7 +21,8 @@
 #include "smoozikmanager.h"
 
 SmoozikManager::SmoozikManager(const QString &apiKey, const SmoozikManager::Format &format, bool blocking, QObject *parent) :
-QNetworkAccessManager(parent) {
+    QNetworkAccessManager(parent)
+{
     setApiKey(apiKey);
     setSecret(QString());
     setFormat(format);
@@ -29,14 +30,16 @@ QNetworkAccessManager(parent) {
 }
 
 SmoozikManager::SmoozikManager(const QString &apiKey, const QString &secret, const SmoozikManager::Format &format, bool blocking, QObject *parent) :
-QNetworkAccessManager(parent) {
+    QNetworkAccessManager(parent)
+{
     setApiKey(apiKey);
     setSecret(secret);
     setFormat(format);
     setBlocking(blocking);
 }
 
-QNetworkReply *SmoozikManager::login(const QString &username, const QString &password) {
+QNetworkReply *SmoozikManager::login(const QString &username, const QString &password)
+{
     QMap<QString, QString> postParams;
     postParams.insert("username", username);
     postParams.insert("authHash", QCryptographicHash::hash(username.toLatin1() + QCryptographicHash::hash(password.toLatin1(), QCryptographicHash::Md5).toHex(), QCryptographicHash::Md5).toHex());
@@ -44,11 +47,13 @@ QNetworkReply *SmoozikManager::login(const QString &username, const QString &pas
     return request("login", QMap<QString, QString>(), postParams);
 }
 
-QNetworkReply *SmoozikManager::startParty() {
+QNetworkReply *SmoozikManager::startParty()
+{
     return request("startParty");
 }
 
-QNetworkReply *SmoozikManager::getTopTracks(int retrieve, int retrieved) {
+QNetworkReply *SmoozikManager::getTopTracks(int retrieve, int retrieved)
+{
     QMap<QString, QString> getParams;
     getParams.insert("retrieve", QString::number(retrieve));
     getParams.insert("retrieved", QString::number(retrieved));
@@ -56,7 +61,8 @@ QNetworkReply *SmoozikManager::getTopTracks(int retrieve, int retrieved) {
     return request("getTopTracks", getParams);
 }
 
-QNetworkReply *SmoozikManager::setTrack(const QString &localId, const QString &name, const QString &artistName, const QString &albumName, uint duration, int position) {
+QNetworkReply *SmoozikManager::setTrack(const QString &localId, const QString &name, const QString &artistName, const QString &albumName, uint duration, int position)
+{
     QMap<QString, QString> postParams;
     postParams.insert("localId", localId);
     postParams.insert("name", name);
@@ -68,18 +74,21 @@ QNetworkReply *SmoozikManager::setTrack(const QString &localId, const QString &n
     return request("setTrack", QMap<QString, QString>(), postParams);
 }
 
-QNetworkReply *SmoozikManager::unsetTrack(const QString &localId) {
+QNetworkReply *SmoozikManager::unsetTrack(const QString &localId)
+{
     QMap<QString, QString> postParams;
     postParams.insert("localId", localId);
 
     return request("unsetTrack", QMap<QString, QString>(), postParams);
 }
 
-QNetworkReply *SmoozikManager::unsetAllTracks() {
+QNetworkReply *SmoozikManager::unsetAllTracks()
+{
     return request("unsetAllTracks");
 }
 
-QNetworkReply *SmoozikManager::sendPlaylist(const SmoozikPlaylist *playlist) {
+QNetworkReply *SmoozikManager::sendPlaylist(const SmoozikPlaylist *playlist)
+{
     QDomDocument doc;
     QDomElement partytracksElement = doc.createElement("partytracks");
     doc.appendChild(partytracksElement);
@@ -130,18 +139,19 @@ QNetworkReply *SmoozikManager::sendPlaylist(const SmoozikPlaylist *playlist) {
     return request("sendPlaylist", QMap<QString, QString>(), postParams);
 }
 
-QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QString> getParams, QMap<QString, QString> postParams) {
+QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QString> getParams, QMap<QString, QString> postParams)
+{
     QNetworkRequest request;
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     //Add format
     switch (format()) {
-        case XML:
-            getParams.insert("format", "xml");
-            break;
-        case JSON:
-            getParams.insert("format", "json");
-            break;
+    case XML:
+        getParams.insert("format", "xml");
+        break;
+    case JSON:
+        getParams.insert("format", "json");
+        break;
     }
 
     //Add key
@@ -168,8 +178,9 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
             key.replace(QByteArray("%"), QByteArray("%25"));
             value.replace(QByteArray("%"), QByteArray("%25"));
             postData.addQueryItem(key, value);
-            if (i.key() != "sig")
+            if (i.key() != "sig") {
                 keyList << i.key();
+            }
         }
     }
 
@@ -189,8 +200,9 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
             key.replace(QByteArray("%"), QByteArray("%25"));
             value.replace(QByteArray("%"), QByteArray("%25"));
             getData.addQueryItem(key, value);
-            if (j.key() != "sig")
+            if (j.key() != "sig") {
                 keyList << j.key();
+            }
         }
     }
 

@@ -30,7 +30,8 @@
 /**
  * @brief The SmoozikTrack class represents a track.
  */
-class SmoozikTrack : public QObject {
+class SmoozikTrack : public QObject
+{
     /**
      * @brief This property holds the local unique Id of the track.
      *

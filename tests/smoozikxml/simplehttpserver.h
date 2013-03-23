@@ -30,7 +30,8 @@
  * It only replies #response to any request.
  * It is inspired by Qt Simple Http Server example
  */
-class SimpleHttpServer : public QTcpServer {
+class SimpleHttpServer : public QTcpServer
+{
     Q_OBJECT
     /**
      * @brief This property holds the response the server will send to any request it receives.

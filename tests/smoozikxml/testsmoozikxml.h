@@ -23,7 +23,8 @@
 
 #include <QtTest>
 
-class TestSmoozikXml : public QObject {
+class TestSmoozikXml : public QObject
+{
     Q_OBJECT
 private slots:
     void serverUnreachable();

@@ -43,7 +43,8 @@
 /**
  * @brief The SmoozikManager class is a Network Access Manager designed to send request to Smoozik server.
  */
-class SmoozikManager : public QNetworkAccessManager {
+class SmoozikManager : public QNetworkAccessManager
+{
 
     Q_OBJECT
     /**

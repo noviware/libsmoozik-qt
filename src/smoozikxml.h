@@ -29,7 +29,8 @@
 /**
  * @brief The SmoozikXml class provides with functions to parse XML response from Smoozik webserver
  */
-class SmoozikXml : public QObject {
+class SmoozikXml : public QObject
+{
     /**
      * @brief This property holds the error encountered in last parse() call.
      *

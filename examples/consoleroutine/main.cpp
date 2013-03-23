@@ -20,7 +20,8 @@
 
 #include "smoozikconsoleroutineapplication.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     SmoozikConsoleRoutineApplication a(argc, argv);
 
     return a.run();
