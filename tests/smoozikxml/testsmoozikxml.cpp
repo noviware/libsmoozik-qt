@@ -63,11 +63,11 @@ void TestSmoozikXml::parse()
     QFETCH(QString, errorMsgResult);
 
     SmoozikXml *xml = new SmoozikXml(this);
-    SimpleHttpServer server(8080);
+    SimpleHttpServer server(8181);
     server.setResponse("");
 
     QNetworkAccessManager manager;
-    QNetworkRequest request(QUrl("http://127.0.0.1:8080"));
+    QNetworkRequest request(QUrl("http://127.0.0.1:8181"));
     QNetworkReply *reply;
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply*)), &loop, SLOT(quit()));
@@ -104,11 +104,11 @@ void TestSmoozikXml::operators()
     QFETCH(QString, toString);
 
     SmoozikXml xml;
-    SimpleHttpServer server(8080);
+    SimpleHttpServer server(8181);
     server.setResponse(response);
 
     QNetworkAccessManager manager;
-    QNetworkRequest request(QUrl("http://127.0.0.1:8080"));
+    QNetworkRequest request(QUrl("http://127.0.0.1:8181"));
     QNetworkReply *reply;
     QEventLoop loop;
     connect(&manager, SIGNAL(finished(QNetworkReply*)), &loop, SLOT(quit()));
