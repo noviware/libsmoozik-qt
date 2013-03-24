@@ -1,4 +1,5 @@
 QT += core testlib network xml
+QT -= gui
 CONFIG += testcase
 include(../common.pri)
 
