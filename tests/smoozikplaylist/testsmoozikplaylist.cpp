@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
     TestSmoozikPlaylist tc;
     QStringList testCmd;
     QDir testLogDir;
-    testLogDir.mkdir("test-results");
-    testCmd<<" "<<"-xml" <<"-o" <<"test-results/smoozikplaylist.xml";
+    testLogDir.mkdir("test-reports");
+    testCmd<<" "<<"-xml" <<"-o" <<"test-reports/smoozikplaylist.xml";
     return QTest::qExec(&tc,testCmd);
 }

@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
     TestSmoozikXml tc;
     QStringList testCmd;
     QDir testLogDir;
-    testLogDir.mkdir("test-results");
-    testCmd<<" "<<"-xml" <<"-o" <<"test-results/smoozikxml.xml";
+    testLogDir.mkdir("test-reports");
+    testCmd<<" "<<"-xml" <<"-o" <<"test-reports/smoozikxml.xml";
     return QTest::qExec(&tc,testCmd);
 }
