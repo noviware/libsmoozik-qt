@@ -197,4 +197,14 @@ void TestSmoozikPlaylist::childrenDeletion()
     QCOMPARE(spy3.count(), 0);
 }
 
-QTEST_MAIN(TestSmoozikPlaylist)
+int main(int argc, char *argv[])
+{
+    QCoreApplication app(argc, argv);
+    app.setAttribute(Qt::AA_Use96Dpi, true);
+    TestSmoozikPlaylist tc;
+    QStringList testCmd;
+    QDir testLogDir;
+    testLogDir.mkdir("test-results");
+    testCmd<<" "<<"-xml" <<"-o" <<"test-results/smoozikplaylist.xml";
+    return QTest::qExec(&tc,testCmd);
+}
