@@ -29,6 +29,13 @@
 #include "smooziktrack.h"
 
 /**
+ * @brief This is the max advised size of a playlist for user experience to stay enjoyable on mobile phones.
+ *
+ * Too long playlists would lag on certain mobile phones.
+ */
+#define MAX_ADVISED_PLAYLIST_SIZE 200
+
+/**
  * @brief The SmoozikPlaylist class represents a collection of track
  */
 class SmoozikPlaylist : public QObject

@@ -10,6 +10,8 @@
 *.so.*
 *.dll
 *.dylib
+*.gcda
+*.gcno
 
 # Qt-es
 
@@ -23,6 +25,6 @@ Makefile
 #project
 lib/*
 doc/*
-src/global.h
+tests/smoozikmanager/config.h
 examples/consoleroutine/config.h
 examples/simplestclient/config.h

@@ -18,26 +18,23 @@
    along with libsmoozk-qt.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TESTSMOOZIKMANAGER_H
-#define TESTSMOOZIKMANAGER_H
+/** @file */
+#ifndef GLOBAL_H
+#define GLOBAL_H
 
-#include <QtTest>
-#include "config.h"
+#include <QtCore/QtGlobal>
 
-class TestSmoozikManager : public QObject
-{
-    Q_OBJECT
-private slots:
-    void constructors();
-    void format();
-    void login_data();
-    void login();
-    void startParty();
-    void sendPlaylist();
-    void setTrack();
-    void unsetTrack();
-    void unsetAllTracks();
-    void getTopTracks();
-};
+#if defined(SMOOZIK_LIBRARY)
+#  define SMOOZIKLIB_EXPORT Q_DECL_EXPORT
+#else
+#  define SMOOZIKLIB_EXPORT Q_DECL_IMPORT
+#endif
 
-#endif // TESTSMOOZIKMANAGER_H
+/**
+ * @brief This is the max advised size of a playlist for user experience to stay enjoyable on mobile phones.
+ *
+ * Too long playlists would lag on certain mobile phones.
+ */
+#define MAX_ADVISED_PLAYLIST_SIZE 200
+
+#endif // GLOBAL_H
