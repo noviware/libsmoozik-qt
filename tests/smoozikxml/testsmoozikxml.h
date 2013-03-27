@@ -22,6 +22,7 @@
 #define TESTSMOOZIKXML_H
 
 #include <QtTest>
+#include "config.h"
 
 class TestSmoozikXml : public QObject
 {

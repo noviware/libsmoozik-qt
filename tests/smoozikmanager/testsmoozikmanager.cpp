@@ -266,14 +266,4 @@ void TestSmoozikManager::getTopTracks()
     QCOMPARE(playlist.first()->localId(), xml["tracks"].toList()[0].toMap()["track"].toMap()["localId"].toString());
 }
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication app(argc, argv);
-    app.setAttribute(Qt::AA_Use96Dpi, true);
-    TestSmoozikManager tc;
-    QStringList testCmd;
-    QDir testLogDir;
-    testLogDir.mkdir("test-reports");
-    testCmd<<" "<<"-xml" <<"-o" <<"test-reports/smoozikmanager.xml";
-    return QTest::qExec(&tc,testCmd);
-}
+QTEST_XML_MAIN(TestSmoozikManager)

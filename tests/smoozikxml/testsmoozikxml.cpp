@@ -122,14 +122,4 @@ void TestSmoozikXml::operators()
     QCOMPARE(xml.parsedString(), toString);
 }
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication app(argc, argv);
-    app.setAttribute(Qt::AA_Use96Dpi, true);
-    TestSmoozikXml tc;
-    QStringList testCmd;
-    QDir testLogDir;
-    testLogDir.mkdir("test-reports");
-    testCmd<<" "<<"-xml" <<"-o" <<"test-reports/smoozikxml.xml";
-    return QTest::qExec(&tc,testCmd);
-}
+QTEST_XML_MAIN(TestSmoozikXml)

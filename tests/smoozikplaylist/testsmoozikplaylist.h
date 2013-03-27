@@ -22,6 +22,7 @@
 #define TESTSMOOZIKPLAYLIST_H
 
 #include <QtTest>
+#include "config.h"
 
 class TestSmoozikPlaylist : public QObject
 {

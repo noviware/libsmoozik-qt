@@ -47,4 +47,19 @@
  */
 #define SECRET ""
 
+/**
+ * @brief Main application running a test case and generating an xml output
+ */
+#define QTEST_XML_MAIN(TestObject) \
+int main(int argc, char *argv[]) \
+{ \
+    QCoreApplication app(argc, argv); \
+    TestObject tc; \
+    QStringList testCmd; \
+    QDir testLogDir; \
+    testLogDir.mkdir("test-reports"); \
+    testCmd<<" "<<"-xml" <<"-o" <<"test-reports/results.xml"; \
+    return QTest::qExec(&tc,testCmd); \
+}
+
 #endif // CONFIG_H

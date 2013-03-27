@@ -19,3 +19,5 @@ CONFIG(debug, debug|release) {
 
 #Tell the exe to look for shared library in SMOOZIKLIB_DIR
 unix:QMAKE_LFLAGS += -Wl,-R -Wl,$$SMOOZIKLIB_DIR
+
+INCLUDEPATH += $$PWD

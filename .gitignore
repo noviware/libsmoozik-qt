@@ -25,6 +25,6 @@ Makefile
 #project
 lib/*
 doc/*
-tests/smoozikmanager/config.h
+tests/config.h
 examples/consoleroutine/config.h
 examples/simplestclient/config.h

@@ -22,6 +22,7 @@
 #define TESTSMOOZIKTRACK_H
 
 #include <QtTest>
+#include "config.h"
 
 class TestSmoozikTrack : public QObject
 {

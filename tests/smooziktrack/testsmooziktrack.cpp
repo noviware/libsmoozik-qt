@@ -64,14 +64,4 @@ void TestSmoozikTrack::constructors()
     QCOMPARE(track4.duration(), (uint) 0);
 }
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication app(argc, argv);
-    app.setAttribute(Qt::AA_Use96Dpi, true);
-    TestSmoozikTrack tc;
-    QStringList testCmd;
-    QDir testLogDir;
-    testLogDir.mkdir("test-reports");
-    testCmd<<" "<<"-xml" <<"-o" <<"test-reports/smooziktrack.xml";
-    return QTest::qExec(&tc,testCmd);
-}
+QTEST_XML_MAIN(TestSmoozikTrack)
