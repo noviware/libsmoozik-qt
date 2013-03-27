@@ -24,6 +24,15 @@
 #include <QMainWindow>
 #include <QDir>
 #include "smoozikmanager.h"
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#include <phonon/MediaSource>
+#include <phonon/AudioOutput>
+#include <QDesktopServices>
+#else
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
+#include <QStandardPaths>
+#endif
 
 namespace Ui
 {
@@ -41,6 +50,25 @@ public:
 private:
     Ui::SmoozikSimplestClientWindow *ui;
     SmoozikManager *smoozikManager;
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    /**
+     * @brief Player used to play music files (Qt4).
+     */
+    Phonon::AudioOutput *player;
+    /**
+     * @brief Playlist containing music files to play (Qt4).
+     */
+    QList<Phonon::MediaSource> playlist;
+#else
+    /**
+     * @brief Player used to play music files (Qt5).
+     */
+    QMediaPlayer *player;
+    /**
+     * @brief Playlist containing music files to play (Qt5).
+     */
+    QMediaPlaylist playlist;
+#endif
     /**
      * @brief Adds tracks from @i directory to @i playlist.
      * @retval 0 All tracks from folder were added to the playlist.

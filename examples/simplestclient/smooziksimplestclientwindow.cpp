@@ -26,13 +26,6 @@
 #include "tag.h"
 
 #include <QStateMachine>
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#include <phonon/MediaController>
-#include <QDesktopServices>
-#else
-#include <QMediaPlayer>
-#include <QStandardPaths>
-#endif
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
@@ -46,6 +39,15 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     // Initialize SmoozikManager
     smoozikManager = new SmoozikManager(APIKEY, SECRET, SmoozikManager::XML, false, this);
     connect(smoozikManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(processNetworkReply(QNetworkReply*)));
+
+    // Initialize player
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    player = new Phonon::AudioOutput(Phonon::MusicCategory, this);
+#else
+    player = new QMediaPlayer(this);
+    playlist.setPlaybackMode(QMediaPlaylist::Sequential);
+    player->setPlaylist(&playlist);
+#endif
 
     // Initialize main state machine which controls what is displayed
     QStateMachine *stateMachine = new QStateMachine(this);
@@ -179,6 +181,24 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
     else if (path.endsWith("api/getTopTracks", Qt::CaseInsensitive)) {
         if (xml.error() == 0) {
             // Set mediaPlaylist from top tracks.
+            SmoozikPlaylist topTracksPlaylist(xml["tracks"].toList());
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#else
+
+            int i = 0;
+            while( i < topTracksPlaylist.size()
+                    && (playlist.mediaCount() < 2
+                        || playlist.currentIndex() > playlist.mediaCount() - 1)) {
+                playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(i)->localId()));
+                i++;
+            }
+
+            if (playlist.mediaCount() < 2) {
+                loginError(tr("A problem occured, the playlist could not be filled with enough playable tracks."));
+            } else {
+                player->play();
+            }
+#endif
         } else {
             loginError(xml.errorMsg());
         }
