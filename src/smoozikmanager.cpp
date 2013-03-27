@@ -174,9 +174,11 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
             QString key = i.key();
             QString value = i.value();
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
             //Percent characters are encoded manually as they are not encoded by Qt encode function.
             key.replace(QByteArray("%"), QByteArray("%25"));
             value.replace(QByteArray("%"), QByteArray("%25"));
+#endif
             postData.addQueryItem(key, value);
             if (i.key() != "sig") {
                 keyList << i.key();
@@ -196,9 +198,11 @@ QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QStr
             QString key = j.key();
             QString value = j.value();
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
             //Percent characters are encoded manually as they are not encoded by Qt encode function.
             key.replace(QByteArray("%"), QByteArray("%25"));
             value.replace(QByteArray("%"), QByteArray("%25"));
+#endif
             getData.addQueryItem(key, value);
             if (j.key() != "sig") {
                 keyList << j.key();
