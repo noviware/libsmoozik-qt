@@ -8,17 +8,25 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 CONFIG(release, debug|release) {
-    unix:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
-    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik.so
+    LIBS += -L$$SMOOZIKLIB_DIR -ltaglib
+    unix:!win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik
+    unix:!win32:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik.so \
+        $$SMOOZIKLIB_DIR/libtaglib.a
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
-    win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.dll
+    win32-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.a
+    win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.dll \
+        $$SMOOZIKLIB_DIR/libtaglib.lib
 }
 
 CONFIG(debug, debug|release) {
-    unix:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
-    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.so
+    LIBS += -L$$SMOOZIKLIB_DIR -ltaglibd
+    unix:!win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd
+    unix:!win32:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.so \
+        $$SMOOZIKLIB_DIR/libtaglibd.a
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
-    win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.dll
+    win32-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.a
+    win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.dll \
+        $$SMOOZIKLIB_DIR/libtaglibd.lib
 }
 
 #Tell the exe to look for shared library in SMOOZIKLIB_DIR
