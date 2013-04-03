@@ -11,7 +11,7 @@ TEMPLATE = app
 CONFIG(release, debug|release) {
     LIBS += -L$$SMOOZIKLIB_DIR -ltaglib
     unix:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
-    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.so \
+    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik.so \
         $$SMOOZIKLIB_DIR/libtaglib.a
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
     win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.dll \
@@ -21,7 +21,7 @@ CONFIG(release, debug|release) {
 CONFIG(debug, debug|release) {
     LIBS += -L$$SMOOZIKLIB_DIR -ltaglibd
     unix:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
-    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.so \
+    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.so \
         $$SMOOZIKLIB_DIR/libtaglibd.a
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
     win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.dll \
