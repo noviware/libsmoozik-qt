@@ -57,6 +57,8 @@ public:
      */
     SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(const QVariantList &list, QObject *parent = 0);
 
+    SMOOZIKLIB_EXPORT ~SmoozikPlaylist();
+
     /**
      * @brief Adds a track to the playlist.
      *

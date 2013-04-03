@@ -38,6 +38,11 @@ SmoozikPlaylist::SmoozikPlaylist(const QVariantList &list, QObject *parent) :
     addTracks(list);
 }
 
+SmoozikPlaylist::~SmoozikPlaylist()
+{
+
+}
+
 void SmoozikPlaylist::addTrack(SmoozikTrack *track)
 {
     if (!contains(track->localId())) {

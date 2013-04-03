@@ -38,6 +38,11 @@ SmoozikManager::SmoozikManager(const QString &apiKey, const QString &secret, con
     setBlocking(blocking);
 }
 
+SmoozikManager::~SmoozikManager()
+{
+
+}
+
 QNetworkReply *SmoozikManager::login(const QString &username, const QString &password)
 {
     QMap<QString, QString> postParams;

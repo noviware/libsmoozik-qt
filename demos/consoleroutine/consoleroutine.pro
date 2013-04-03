@@ -8,15 +8,15 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 CONFIG(release, debug|release) {
-    unix:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik
-    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik.so
+    unix:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
+    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.so
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
     win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.dll
 }
 
 CONFIG(debug, debug|release) {
-    unix:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd
-    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.so
+    unix:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
+    unix:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.so
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
     win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.dll
 }

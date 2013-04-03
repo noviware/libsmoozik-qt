@@ -131,6 +131,7 @@ public:
     };
     SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const Format &format = XML, bool blocking = true, QObject *parent = 0);
     SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const QString &secret, const Format &format = XML, bool blocking = true, QObject *parent = 0);
+    SMOOZIKLIB_EXPORT ~SmoozikManager();
 
     inline QString apiKey() const {
         return _apiKey;

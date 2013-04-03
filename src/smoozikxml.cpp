@@ -33,6 +33,11 @@ SmoozikXml::SmoozikXml(QNetworkReply *reply, QObject *parent) :
     parse(reply);
 }
 
+SmoozikXml::~SmoozikXml()
+{
+
+}
+
 void SmoozikXml::parse(const QDomElement &dataElement)
 {
     cleanError();

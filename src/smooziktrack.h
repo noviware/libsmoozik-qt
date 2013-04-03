@@ -84,6 +84,8 @@ public:
      */
     SMOOZIKLIB_EXPORT explicit SmoozikTrack(const QVariantMap &map, QObject *parent = 0);
 
+    SMOOZIKLIB_EXPORT ~SmoozikTrack();
+
     inline QString localId() const {
         return _localId;
     } /**< see #localId */

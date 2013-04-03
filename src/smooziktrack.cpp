@@ -43,6 +43,11 @@ SmoozikTrack::SmoozikTrack(const QVariantMap &map, QObject *parent) :
     setPropertiesFromMap(map);
 }
 
+SmoozikTrack::~SmoozikTrack()
+{
+
+}
+
 void SmoozikTrack::setPropertiesFromMap(const QVariantMap &map)
 {
     (map.contains("localId")) ? _localId = map["localId"].toString() : _localId = QString();

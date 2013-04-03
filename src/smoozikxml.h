@@ -57,6 +57,8 @@ public:
      */
     SMOOZIKLIB_EXPORT explicit SmoozikXml(QNetworkReply *reply, QObject *parent = 0);
 
+    SMOOZIKLIB_EXPORT ~SmoozikXml();
+
     inline SmoozikManager::Error error() const {
         return _error;
     } /**< @see #error */
