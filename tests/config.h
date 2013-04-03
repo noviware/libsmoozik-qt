@@ -22,30 +22,47 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#ifndef MANAGER_USERNAME
 /**
  * @brief Username used to test manager functions in unit tests.
  */
 #define MANAGER_USERNAME ""
+#endif // MANAGER_USERNAME
+
+#ifndef MANAGER_PASSWORD
 /**
  * @brief Password used to test manager functions in unit tests.
  */
 #define MANAGER_PASSWORD ""
+#endif // MANAGER_PASSWORD
+
+#ifndef MEMBER_USERNAME
 /**
  * @brief Username used to test member functions in unit tests.
  */
 #define MEMBER_USERNAME ""
+#endif // MEMBER_USERNAME
+
+#ifndef MEMBER_PASSWORD
 /**
  * @brief Password used to test member functions in unit tests.
  */
 #define MEMBER_PASSWORD ""
+#endif // MEMBER_PASSWORD
+
+#ifndef APIKEY
 /**
  * @brief API key used to test functions in unit tests.
  */
 #define APIKEY ""
+#endif // APIKEY
+
+#ifndef SECRET
 /**
  * @brief Secret used to test functions in unit tests.
  */
 #define SECRET ""
+#endif // SECRET
 
 /**
  * @brief Main application running a test case and generating an xml output

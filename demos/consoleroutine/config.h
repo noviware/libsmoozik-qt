@@ -21,7 +21,20 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#ifndef USERNAME
+#define USERNAME ""
+#endif // USERNAME
+
+#ifndef PASSWORD
+#define PASSWORD ""
+#endif // PASSWORD
+
+#ifndef APIKEY
 #define APIKEY ""
+#endif // APIKEY
+
+#ifndef SECRET
 #define SECRET ""
+#endif // SECRET
 
 #endif // CONFIG_H

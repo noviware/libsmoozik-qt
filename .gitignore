@@ -12,6 +12,9 @@
 *.dylib
 *.gcda
 *.gcno
+*.obj
+*.pdb
+*.res
 
 # Qt-es
 
@@ -19,12 +22,9 @@
 *.pro.user.*
 moc_*.cpp
 qrc_*.cpp
-Makefile
+Makefile*
 *-build-*
 
 #project
 lib/*
 doc/*
-tests/config.h
-examples/consoleroutine/config.h
-examples/simplestclient/config.h

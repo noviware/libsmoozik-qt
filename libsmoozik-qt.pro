@@ -3,7 +3,7 @@ CONFIG += ordered
 SUBDIRS += src \
     tests \
     3rdparty \
-    examples
+    demos
 tests.depends = src
-examples.depends = src
-examples.depends = 3rdparty
+demos.depends = src
+demos.depends = 3rdparty
