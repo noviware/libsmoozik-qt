@@ -4,16 +4,16 @@ CONFIG += testcase
 include(../common.pri)
 
 CONFIG(release, debug|release) {
-    unix:!win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik
-    unix:!win32:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik.so
+    linux:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik
+    linux-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik.so
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
     win32-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.a
     win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.dll
 }
 
 CONFIG(debug, debug|release) {
-    unix:!win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd
-    unix:!win32:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.so
+    linux:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd
+    linux-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.so
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
     win32-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.a
     win32-msvc:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.dll
