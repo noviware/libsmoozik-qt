@@ -4,7 +4,7 @@ CONFIG += testcase
 include(../common.pri)
 
 CONFIG(release, debug|release) {
-    linux:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik
+    linux-g++:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik
     linux-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik.so
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
     win32-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik$${LIBSMOOZIK_VER}.a
@@ -12,7 +12,7 @@ CONFIG(release, debug|release) {
 }
 
 CONFIG(debug, debug|release) {
-    linux:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd
+    linux-g++:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd
     linux-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.so
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
     win32-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd$${LIBSMOOZIK_VER}.a

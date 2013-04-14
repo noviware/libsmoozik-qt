@@ -10,7 +10,7 @@ TEMPLATE = app
 
 CONFIG(release, debug|release) {
     LIBS += -L$$SMOOZIKLIB_DIR -ltaglib
-    linux:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik
+    linux-g++:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik
     linux-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozik.so \
         $$SMOOZIKLIB_DIR/libtaglib.a
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozik$${LIBSMOOZIK_VER}
@@ -21,7 +21,7 @@ CONFIG(release, debug|release) {
 
 CONFIG(debug, debug|release) {
     LIBS += -L$$SMOOZIKLIB_DIR -ltaglibd
-    linux:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd
+    linux-g++:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd
     linux-g++:PRE_TARGETDEPS += $$SMOOZIKLIB_DIR/libqtsmoozikd.so \
         $$SMOOZIKLIB_DIR/libtaglibd.a
     win32:LIBS += -L$$SMOOZIKLIB_DIR -lqtsmoozikd$${LIBSMOOZIK_VER}
