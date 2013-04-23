@@ -25,12 +25,18 @@
 #include <QDir>
 #include "smoozikmanager.h"
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#include <phonon/MediaSource>
+#include <phonon/MediaObject>
 #include <phonon/AudioOutput>
+#include <phonon/MediaSource>
 #include <QDesktopServices>
 #else
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
+// As updatePlaylistCurrentIndex() slot must be declared no matter the Qt version, Phonon::MediaSource class need to be declared.
+namespace Phonon
+{
+class MediaSource;
+}
 #include <QStandardPaths>
 #endif
 
@@ -54,11 +60,15 @@ private:
     /**
      * @brief Player used to play music files (Qt4).
      */
-    Phonon::AudioOutput *player;
+    Phonon::MediaObject *player;
     /**
      * @brief Playlist containing music files to play (Qt4).
      */
     QList<Phonon::MediaSource> playlist;
+    /**
+     * @brief Index of the current track in #playlist (Qt4).
+     */
+    int playlistCurrentIndex;
 #else
     /**
      * @brief Player used to play music files (Qt5).
@@ -94,6 +104,17 @@ private slots:
      * @brief Asks user to select a folder containing music files until a non-empty playlist can be filled.
      */
     void retrieveTracksDialog();
+    /**
+     * @brief Update playlistCurrentIndex to match newSource (Qt4).
+     */
+    inline void updatePlaylistCurrentIndex(const Phonon::MediaSource &newSource) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+        playlistCurrentIndex = playlist.indexOf(newSource);
+#else
+        (void)newSource;
+#endif
+    }
+
 
 signals:
     /**

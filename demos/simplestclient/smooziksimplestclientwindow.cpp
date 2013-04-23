@@ -42,7 +42,11 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
 
     // Initialize player
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    player = new Phonon::AudioOutput(Phonon::MusicCategory, this);
+    player = new Phonon::MediaObject(this);
+    Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
+    Phonon::createPath(player, audioOutput);
+    playlistCurrentIndex = 0;
+    connect(player, SIGNAL(currentSourceChanged(Phonon::MediaSource)), this, SLOT(updatePlaylistCurrentIndex(Phonon::MediaSource)));
 #else
     player = new QMediaPlayer(this);
     playlist.setPlaybackMode(QMediaPlaylist::Sequential);
@@ -182,23 +186,31 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
         if (xml.error() == 0) {
             // Set mediaPlaylist from top tracks.
             SmoozikPlaylist topTracksPlaylist(xml["tracks"].toList());
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#else
 
             int i = 0;
-            while( i < topTracksPlaylist.size()
-                    && (playlist.mediaCount() < 2
-                        || playlist.currentIndex() > playlist.mediaCount() - 1)) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+            while( i < topTracksPlaylist.size()  && (playlist.count() < 2 || playlistCurrentIndex > playlist.count() - 1)) {
+                playlist.append(Phonon::MediaSource(topTracksPlaylist.value(i)->localId()));
+                i++;
+            }
+            player->clearQueue();
+            player->enqueue(playlist.mid(playlistCurrentIndex));
+#else
+            while( i < topTracksPlaylist.size()  && (playlist.mediaCount() < 2 || playlist.currentIndex() > playlist.mediaCount() - 1)) {
                 playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(i)->localId()));
                 i++;
             }
+#endif
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+            if (playlist.count() < 2) {
+#else
             if (playlist.mediaCount() < 2) {
+#endif
                 loginError(tr("A problem occured, the playlist could not be filled with enough playable tracks."));
             } else {
                 player->play();
             }
-#endif
         } else {
             loginError(xml.errorMsg());
         }

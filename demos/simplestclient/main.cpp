@@ -24,6 +24,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setApplicationName("Smoozik Simplest Client");
     SmoozikSimplestClientWindow w;
     w.show();
 
