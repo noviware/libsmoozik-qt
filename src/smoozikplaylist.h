@@ -45,13 +45,13 @@ class SmoozikPlaylist : public QObject
 public:
     SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(QObject *parent = 0);
     /**
-     * @brief Constructs a SmoozikPlaylist and fills it with data from DomDocument @i doc.
-     * @param doc DomDocument containing a list of <track> elements
+     * @brief Constructs a SmoozikPlaylist and fills it with data from DomDocument @em doc.
+     * @param doc DomDocument containing a list of \<track\> elements
      * @param parent
      */
     SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(const QDomDocument &doc, QObject *parent = 0);
     /**
-     * @brief Constructs a SmoozikPlaylist and fills it with data from QVariantList @i list.
+     * @brief Constructs a SmoozikPlaylist and fills it with data from QVariantList @em list.
      * @param list QVariantList containing a list of track elements parsed using SmoozikXml
      * @param parent
      */
@@ -82,24 +82,24 @@ public:
     }
 
     /**
-     * @brief Adds tracks from DomDocument @i doc to the playlist.
-     * @param doc DomDocument containing a list of <track> elements
+     * @brief Adds tracks from DomDocument @em doc to the playlist.
+     * @param doc DomDocument containing a list of \<track\> elements
      */
     SMOOZIKLIB_EXPORT void addTracks(const QDomDocument &doc);
 
     /**
-     * @brief Adds tracks from QVariantList @i doc to the playlist.
+     * @brief Adds tracks from QVariantList @em doc to the playlist.
      * @param list QVariantList containing a list of track elements parsed using SmoozikXml
      */
     SMOOZIKLIB_EXPORT void addTracks(const QVariantList &list);
 
     /**
-     * @brief Returns true if the playlist contains a track with @i localId; otherwise returns false.
+     * @brief Returns true if the playlist contains a track with @em localId; otherwise returns false.
      */
     SMOOZIKLIB_EXPORT bool contains(const QString &localId) const;
 
     /**
-     * @brief Returns the index position of the first occurrence of track with @i localId in the playlist, searching forward from index position from. Returns -1 if no item matched.
+     * @brief Returns the index position of the first occurrence of track with @em localId in the playlist, searching forward from index position from. Returns -1 if no item matched.
      */
     SMOOZIKLIB_EXPORT int indexOf(const QString &localId) const;
 

@@ -91,7 +91,7 @@ public:
     SMOOZIKLIB_EXPORT static QVariant parseElement(const QDomElement &element);
 
     /**
-     * @brief Returns the element at @i key of #_parsed if _parsed is a QMap.
+     * @brief Returns the element at @em key of #_parsed if #_parsed is a QMap.
      *
      * This element might either be a QString (accessible through QVariant::toString()),
      * a QList (accessible through QVariant::toList())
@@ -100,7 +100,7 @@ public:
     SMOOZIKLIB_EXPORT QVariant operator[] (const QString &key) const;
 
     /**
-     * @brief Returns the element at index position @i i of #_parsed if _parsed is a QList.
+     * @brief Returns the element at index position @em i of #_parsed if #_parsed is a QList.
      *
      * This element might either be a QString (accessible through QVariant::toString()),
      * a QList (accessible through QVariant::toList())

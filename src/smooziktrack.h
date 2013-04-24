@@ -70,14 +70,14 @@ class SmoozikTrack : public QObject
 public:
     SMOOZIKLIB_EXPORT explicit SmoozikTrack(const QString &localId, const QString &name, QObject *parent = 0, const QString &artist = QString(), const QString &album = QString(), uint duration = 0);
     /**
-     * @brief Constructs a SmoozikTrack and fills its properties with data from DomDocument @i doc.
+     * @brief Constructs a SmoozikTrack and fills its properties with data from DomDocument @em doc.
      * @param doc DomDocument containing a list of track properties
      * @param parent
      * @return
      */
     SMOOZIKLIB_EXPORT explicit SmoozikTrack(const QDomDocument &doc, QObject *parent = 0);
     /**
-     * @brief Constructs a SmoozikTrack and fills its properties with data from QVariantMap @i map.
+     * @brief Constructs a SmoozikTrack and fills its properties with data from QVariantMap @em map.
      * @param map QVariantMap containing a list of track properties
      * @param parent
      * @return
@@ -113,7 +113,7 @@ private:
     QString _album; /**< see #album */
     uint _duration; /**< see #duration */
     /**
-     * @brief Sets track properties with data from QVariantMap @i map.
+     * @brief Sets track properties with data from QVariantMap @em map.
      * @param map QVariantMap containing a list of track properties
      */
     void setPropertiesFromMap(const QVariantMap &map);
