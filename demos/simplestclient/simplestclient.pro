@@ -34,9 +34,11 @@ CONFIG(debug, debug|release) {
 unix:QMAKE_LFLAGS += -Wl,-R -Wl,$$SMOOZIKLIB_DIR
 
 SOURCES += main.cpp\
-        smooziksimplestclientwindow.cpp
+    smooziksimplestclientwindow.cpp \
+    smoozikplaylistfiller.cpp
 
 HEADERS  += smooziksimplestclientwindow.h \
-    config.h
+    config.h \
+    smoozikplaylistfiller.h
 
 FORMS    += smooziksimplestclientwindow.ui

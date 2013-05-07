@@ -22,13 +22,10 @@
 #include "ui_smooziksimplestclientwindow.h"
 #include "config.h"
 #include "smoozikxml.h"
-#include "fileref.h"
-#include "tag.h"
 
 #include <QStateMachine>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QDebug>
 
 SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -38,7 +35,27 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
 
     // Initialize SmoozikManager
     smoozikManager = new SmoozikManager(APIKEY, SECRET, SmoozikManager::XML, false, this);
+    smoozikPlaylist = new SmoozikPlaylist;
     connect(smoozikManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(processNetworkReply(QNetworkReply*)));
+
+    // Initialize music directory
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    _dirName = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
+#else
+    _dirName = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
+#endif
+
+    // Initialize playlist filler
+    ui->setupUi(this);
+    smoozikPlaylistFillerThread = new QThread();
+    smoozikPlaylistFiller = new SmoozikPlaylistFiller(smoozikPlaylist);
+    smoozikPlaylistFiller->moveToThread(smoozikPlaylistFillerThread);
+    connect(smoozikPlaylistFiller, SIGNAL(trackFound(QString,QString,QString,QString,uint)), this, SLOT(addTrackToPlaylist(QString,QString,QString,QString,uint)));
+    connect(smoozikPlaylistFiller, SIGNAL(tracksRetrieved()), this, SIGNAL(tracksRetrieved()));
+    connect(smoozikPlaylistFiller, SIGNAL(noTrackRetrieved()), this, SLOT(noTrackRetrievedMessage()));
+    connect(smoozikPlaylistFiller, SIGNAL(maxPlaylistSizeReached()), this, SLOT(maxPlaylistSizeReachedMessage()));
+    connect(smoozikPlaylistFillerThread, SIGNAL(started()), smoozikPlaylistFiller, SLOT(fillPlaylist()));
+    connect(smoozikPlaylistFiller, SIGNAL(finished()), smoozikPlaylistFillerThread, SLOT(quit()), Qt::DirectConnection);
 
     // Initialize player
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
@@ -47,34 +64,75 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     Phonon::createPath(player, audioOutput);
     playlistCurrentIndex = 0;
     connect(player, SIGNAL(currentSourceChanged(Phonon::MediaSource)), this, SLOT(updatePlaylistCurrentIndex(Phonon::MediaSource)));
+    connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
 #else
     player = new QMediaPlayer(this);
     playlist.setPlaybackMode(QMediaPlaylist::Sequential);
     player->setPlaylist(&playlist);
+    connect(player, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
 #endif
+    connect(ui->playButton, SIGNAL(clicked()), player, SLOT(play()));
+    connect(ui->pauseButton, SIGNAL(clicked()), player, SLOT(pause()));
 
     // Initialize main state machine which controls what is displayed
     QStateMachine *stateMachine = new QStateMachine(this);
-    QState *loginState = new QState(stateMachine);
-    QState *retrieveTracksState = new QState(stateMachine);
-    QState *playerState = new QState(stateMachine);
+    QState *mainState = new QState(stateMachine);
+    QState *loginState = new QState(mainState);
+    QState *startPartyState = new QState(mainState);
+    QState *retrieveTracksState = new QState(mainState);
+    QState *sendPlaylistState = new QState(mainState);
+    QState *getTopTracksState = new QState(mainState);
+    QState *playerState = new QState(mainState);
     QState *playingState = new QState(playerState);
     QState *pausedState = new QState(playerState);
 
     // Define state transitions
-    stateMachine->setInitialState(loginState);
-    loginState->addTransition(this, SIGNAL(ready()), retrieveTracksState);
-    retrieveTracksState->addTransition(this, SIGNAL(disconnect()), loginState);
+    stateMachine->setInitialState(mainState);
+    mainState->setInitialState(loginState);
+
+    mainState->addTransition(this, SIGNAL(disconnect()), loginState);
+    mainState->addTransition(this, SIGNAL(playing()), playingState);
+    mainState->addTransition(this, SIGNAL(paused()), pausedState);
+    loginState->addTransition(this, SIGNAL(loggedIn()), startPartyState);
+    startPartyState->addTransition(this, SIGNAL(partyStarted()), retrieveTracksState);
+    retrieveTracksState->addTransition(this, SIGNAL(tracksRetrieved()), sendPlaylistState);
+    sendPlaylistState->addTransition(this, SIGNAL(playlistSent()), getTopTracksState);
 
     // Define state properties
+    loginState->assignProperty(this, "state", Login);
     loginState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->loginPage));
     loginState->assignProperty(ui->loginButton, "enabled", true);
     loginState->assignProperty(ui->usernameLineEdit, "enabled", true);
     loginState->assignProperty(ui->passwordLineEdit, "enabled", true);
     loginState->assignProperty(ui->loginStateLabel, "text", QString());
 
+    startPartyState->assignProperty(this, "state", StartParty);
+    startPartyState->assignProperty(ui->loginStateLabel, "text", tr("Starting party..."));
+
+    retrieveTracksState->assignProperty(this, "state", RetrieveTracks);
     retrieveTracksState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->loadingPage));
+    retrieveTracksState->assignProperty(ui->loginStateLabel, "text", tr("Connected"));
     retrieveTracksState->assignProperty(ui->loadingLabel, "text", tr("Retrieving tracks..."));
+
+    sendPlaylistState->assignProperty(this, "state", SendPlaylist);
+    sendPlaylistState->assignProperty(ui->loadingLabel, "text", tr("Sending playlist..."));
+
+    getTopTracksState->assignProperty(this, "state", GetTopTracks);
+    getTopTracksState->assignProperty(ui->loadingLabel, "text", tr("Get top tracks..."));
+
+    playerState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->playerPage));
+
+    playingState->assignProperty(ui->playButton, "visible", false);
+    playingState->assignProperty(ui->pauseButton, "visible", true);
+
+    pausedState->assignProperty(ui->playButton, "visible", true);
+    pausedState->assignProperty(ui->pauseButton, "visible", false);
+
+    // Connect states and actions
+    connect(startPartyState, SIGNAL(entered()), this, SLOT(startParty()));
+    connect(retrieveTracksState, SIGNAL(entered()), this, SLOT(retrieveTracksDialog()));
+    connect(sendPlaylistState, SIGNAL(entered()), this, SLOT(sendPlaylist()));
+    connect(getTopTracksState, SIGNAL(entered()), this, SLOT(getTopTracks()));
 
     // Connect gui and actions
     connect(ui->usernameLineEdit, SIGNAL(returnPressed()), this, SLOT(submitLogin()));
@@ -87,103 +145,45 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
 
 SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow()
 {
+    smoozikPlaylistFiller->abort();
+    smoozikPlaylistFillerThread->wait();
+    delete smoozikPlaylistFillerThread;
+    delete smoozikPlaylistFiller;
+    delete smoozikPlaylist;
+
     delete ui;
 }
 
-int SmoozikSimplestClientWindow::addTracksToPlaylist(const QDir *directory, SmoozikPlaylist *playlist)
-{
-
-    foreach(QString fileName, directory->entryList()) {
-
-        if (fileName != ".." && fileName != ".") {
-            QString fullPathFileName = directory->filePath(fileName);
-
-            QFileInfo fileInfo(fullPathFileName);
-
-            // If it is a directory, use addTracksToPlaylist recursively.
-            if (fileInfo.isDir()) {
-                QDir subdirectory(fullPathFileName);
-                if (addTracksToPlaylist(&subdirectory, playlist) == -1) {
-                    return -1;
-                }
-            }
-            // Else try to add track to playlist.
-            else {
-
-                TagLib::FileRef mediaFileRef(QFile::encodeName(fullPathFileName).constData());
-                if (!mediaFileRef.isNull()) {
-
-                    QString name, artist, album;
-                    name = TStringToQString(mediaFileRef.tag()->title());
-                    artist = TStringToQString(mediaFileRef.tag()->artist());
-                    album = TStringToQString(mediaFileRef.tag()->album());
-
-                    if (name != QString()) {
-                        playlist->addTrack(fullPathFileName, name, artist, album);
-
-                        if (playlist->size() >= MAX_ADVISED_PLAYLIST_SIZE) {
-
-                            QMessageBox messageBox(QMessageBox::Warning, tr("Max playlist size reached."), tr("Max playlist size of %1 tracks has been reached. Not all tracks were added to the playlist.").arg(MAX_ADVISED_PLAYLIST_SIZE));
-                            messageBox.exec();
-                            return -1;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return 0;
-
-}
 
 void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
 {
-    QString path = reply->url().path();
     SmoozikXml xml(reply);
-    // Process different cases of request
+    if (xml.error() != 0) {
+        loginError(xml.errorMsg());
+    } else {
 
-    //Login case
-    if (path.endsWith("api/login", Qt::CaseInsensitive)) {
-        if (xml.error() == 0) {
+        // Process different cases of request
+        switch(state()) {
 
+        case Login : {
             //Retrieve sessionKey
             smoozikManager->setSessionKey(xml["sessionKey"].toString());
-
-            // Starting party
-            ui->loginStateLabel->setText(tr("Starting party..."));
-            qApp->processEvents();
-            smoozikManager->startParty();
-        } else {
-            loginError(xml.errorMsg());
+            emit loggedIn();
+            break;
         }
-    }
 
-    //Start party case
-    else if (path.endsWith("api/startParty", Qt::CaseInsensitive)) {
-        if (xml.error() == 0) {
-            ui->loginStateLabel->setText(tr("Connected"));
-            emit ready();
-            retrieveTracksDialog();
-        } else {
-            loginError(xml.errorMsg());
+        case StartParty : {
+            emit partyStarted();
+            break;
         }
-    }
 
-    //Send playlist case
-    else if (path.endsWith("api/sendPlaylist", Qt::CaseInsensitive)) {
-        if (xml.error() == 0) {
-            ui->loadingLabel->setText(tr("Get top tracks..."));
-            qApp->processEvents();
-            smoozikManager->getTopTracks();
-        } else {
-            loginError(xml.errorMsg());
+        case SendPlaylist : {
+            emit playlistSent();
+            break;
         }
-    }
 
-    //Get top tracks case
-    else if (path.endsWith("api/getTopTracks", Qt::CaseInsensitive)) {
-        if (xml.error() == 0) {
+        case GetTopTracks : {
+
             // Set mediaPlaylist from top tracks.
             SmoozikPlaylist topTracksPlaylist(xml["tracks"].toList());
 
@@ -211,8 +211,11 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
             } else {
                 player->play();
             }
-        } else {
-            loginError(xml.errorMsg());
+            break;
+        }
+
+        default :
+            loginError(tr("Unkown state encountered."));
         }
     }
 }
@@ -240,32 +243,64 @@ void SmoozikSimplestClientWindow::loginError(QString errorMsg)
 
 void SmoozikSimplestClientWindow::retrieveTracksDialog()
 {
-    SmoozikPlaylist playlist;
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QDir directory(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
-#else
-    QDir directory(QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
-#endif
-    while (playlist.isEmpty()) {
-        QFileDialog dialog(0, tr("Select folder"), directory.path(), "Directories");
-        dialog.setFileMode(QFileDialog::Directory);
-        dialog.setOption(QFileDialog::ShowDirsOnly, true);
-        if (dialog.exec()) {
-            directory = QDir(dialog.selectedFiles().value(0));
+    smoozikPlaylist->clear();
+    QDir directory(_dirName);
 
-            addTracksToPlaylist(&directory, &playlist);
+    QFileDialog dialog(0, tr("Select folder"), directory.path(), "Directories");
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
 
-            if (playlist.isEmpty()) {
-                QMessageBox messageBox(QMessageBox::Warning, tr("No valid track in this directory."), tr("No valid track in this directory."));
-                messageBox.exec();
-            }
-        } else {
-            emit disconnect();
-            return;
-        }
+    if (dialog.exec()) {
+        _dirName = dialog.selectedFiles().value(0);
+
+        //Start SmoozikPlaylist filler in another thread
+        smoozikPlaylistFiller->abort();
+        smoozikPlaylistFillerThread->wait();
+        smoozikPlaylistFiller->setDirName(_dirName);
+        smoozikPlaylistFillerThread->start();
+
+    } else {
+        emit disconnect();
+        return;
     }
+}
 
-    ui->loadingLabel->setText(tr("Sending playlist..."));
-    qApp->processEvents();
-    smoozikManager->sendPlaylist(&playlist);
+void SmoozikSimplestClientWindow::playerStateChanged(const Phonon::State newstate, const Phonon::State)
+{
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    if (newstate == Phonon::PlayingState) {
+        emit playing();
+    } else if (newstate == Phonon::PausedState) {
+        emit paused();
+    }
+#else
+    (void)newstate;
+#endif
+}
+
+void SmoozikSimplestClientWindow::playerStateChanged(const QMediaPlayer::State state)
+{
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    (void)state;
+#else
+    if (state == QMediaPlayer::PlayingState) {
+        emit playing();
+    } else if (state == QMediaPlayer::PausedState) {
+        emit paused();
+    }
+#endif
+}
+
+void SmoozikSimplestClientWindow::maxPlaylistSizeReachedMessage()
+{
+    QMessageBox messageBox(QMessageBox::Warning, tr("Max playlist size reached."), tr("Max playlist size of %1 tracks has been reached. Not all tracks were added to the playlist.").arg(MAX_ADVISED_PLAYLIST_SIZE));
+    messageBox.exec();
+}
+
+void SmoozikSimplestClientWindow::noTrackRetrievedMessage()
+{
+    QMessageBox messageBox(QMessageBox::Warning, tr("No valid track in this directory."), tr("No valid track in this directory."));
+    messageBox.exec();
+
+    retrieveTracksDialog();
 }

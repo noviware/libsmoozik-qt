@@ -23,19 +23,31 @@
 
 #include <QMainWindow>
 #include <QDir>
+#include <QThread>
 #include "smoozikmanager.h"
+#include "smoozikplaylistfiller.h"
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #include <phonon/MediaObject>
 #include <phonon/AudioOutput>
 #include <phonon/MediaSource>
 #include <QDesktopServices>
+// As slots must be declared no matter the Qt version, QMediaPlayer namespace need to be declared.
+namespace QMediaPlayer
+{
+enum State {
+    Empty
+};
+}
 #else
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
-// As updatePlaylistCurrentIndex() slot must be declared no matter the Qt version, Phonon::MediaSource class need to be declared.
+// As slots must be declared no matter the Qt version, Phonon namespace need to be declared.
 namespace Phonon
 {
 class MediaSource;
+enum State {
+    Empty
+};
 }
 #include <QStandardPaths>
 #endif
@@ -47,15 +59,48 @@ class SmoozikSimplestClientWindow;
 
 class SmoozikSimplestClientWindow : public QMainWindow
 {
+    Q_ENUMS(State)
+    /**
+     * @brief This property holds the current state in which the program is.
+     * @af state(), setState()
+     * @pm _state
+     */
+    Q_PROPERTY(State state READ state WRITE setState)
     Q_OBJECT
 
 public:
     explicit SmoozikSimplestClientWindow(QWidget *parent = 0);
     ~SmoozikSimplestClientWindow();
+    /**
+     * @brief The State enum defines states in which the program could be.
+     * @sa #state
+     */
+    enum State {
+        Login,
+        StartParty,
+        RetrieveTracks,
+        SendPlaylist,
+        GetTopTracks
+    };
+    inline State state() const {
+        return _state;
+    } /**< @see #state */
+    inline void setState(const State &state) {
+        _state = state;
+    } /**< @see #state */
 
 private:
     Ui::SmoozikSimplestClientWindow *ui;
     SmoozikManager *smoozikManager;
+    SmoozikPlaylist *smoozikPlaylist;
+    /**
+     * @brief Thread that will run the SmoozikPlaylistFiller
+     */
+    QThread *smoozikPlaylistFillerThread;
+    /**
+     * @brief Worker class to fill playlist with from folder
+     */
+    SmoozikPlaylistFiller* smoozikPlaylistFiller;
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     /**
      * @brief Player used to play music files (Qt4).
@@ -79,12 +124,11 @@ private:
      */
     QMediaPlaylist playlist;
 #endif
+    State _state; /**< @see #state */
     /**
-     * @brief Adds tracks from @i directory to @i playlist.
-     * @retval 0 All tracks from folder were added to the playlist.
-     * @retval -1 All tracks were not added (either because an error occured or because playlist max size has been reached).
+     * @brief Path to the directory currently used to fetch tracks.
      */
-    int addTracksToPlaylist(const QDir *directory, SmoozikPlaylist *playlist);
+    QString _dirName;
 
 private slots:
     /**
@@ -101,6 +145,25 @@ private slots:
      */
     void loginError(QString errorMsg);
     /**
+     * @brief Starts a party using #smoozikManager.
+     */
+    inline void startParty() {
+        smoozikManager->startParty();
+    }
+    /**
+     * @brief Get top tracks using #smoozikManager.
+     */
+    inline void getTopTracks() {
+        smoozikManager->getTopTracks();
+    }
+    /**
+     * @brief Starts a party using #smoozikManager.
+     */
+    inline void sendPlaylist() {
+        smoozikManager->sendPlaylist(smoozikPlaylist);
+    }
+
+    /**
      * @brief Asks user to select a folder containing music files until a non-empty playlist can be filled.
      */
     void retrieveTracksDialog();
@@ -114,17 +177,59 @@ private slots:
         (void)newSource;
 #endif
     }
+    /**
+     * @brief Emits signal #playing() or #paused() depending on the new #player state (Qt4).
+     */
+    void playerStateChanged(const Phonon::State newstate, const Phonon::State);
+    /**
+     * @brief Emits signal #playing() or #paused() depending on the new #player state (Qt5).
+     */
+    void playerStateChanged(const QMediaPlayer::State state);
+    /**
+     * @brief Adds a track to the #smoozikPlaylist.
+     */
+    inline void addTrackToPlaylist(QString localId, QString name, QString artist = QString(), QString album = QString(), uint duration = 0) {
+        smoozikPlaylist->addTrack(localId, name, artist, album, duration);
+    }
 
+    /**
+     * @brief Displays a message box warning about max playlist size having been reached.
+     */
+    void maxPlaylistSizeReachedMessage();
+    /**
+     * @brief Displays a message box warning about no track being present in current directory then call retrieveTracksDialog().
+     */
+    void noTrackRetrievedMessage();
 
 signals:
     /**
-     * @brief This signal is emitted when user is correctly logged in and party is correctly started.
+     * @brief This signal is emitted when user is correctly logged in.
      */
-    void ready();
+    void loggedIn();
+    /**
+     * @brief This signal is emitted when party is correctly started.
+     */
+    void partyStarted();
+    /**
+     * @brief This signal is emitted when local tracks have been retrieved.
+     */
+    void tracksRetrieved();
+    /**
+     * @brief This signal is emitted when playlist has been sent to Smoozik server.
+     */
+    void playlistSent();
     /**
      * @brief This signal is emitted when user request disconnection.
      */
     void disconnect();
+    /**
+     * @brief This signal is emitted when player starts playing.
+     */
+    void playing();
+    /**
+     * @brief This signal is emitted when player is paused.
+     */
+    void paused();
 };
 
 #endif // SMOOZIKSIMPLESTCLIENTWINDOW_H
