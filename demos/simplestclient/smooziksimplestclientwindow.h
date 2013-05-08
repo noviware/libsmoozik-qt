@@ -31,24 +31,9 @@
 #include <phonon/AudioOutput>
 #include <phonon/MediaSource>
 #include <QDesktopServices>
-// As slots must be declared no matter the Qt version, QMediaPlayer namespace need to be declared.
-namespace QMediaPlayer
-{
-enum State {
-    Empty
-};
-}
 #else
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
-// As slots must be declared no matter the Qt version, Phonon namespace need to be declared.
-namespace Phonon
-{
-class MediaSource;
-enum State {
-    Empty
-};
-}
 #include <QStandardPaths>
 #endif
 
@@ -107,23 +92,11 @@ private:
      * @brief Player used to play music files (Qt4).
      */
     Phonon::MediaObject *player;
-    /**
-     * @brief Playlist containing music files to play (Qt4).
-     */
-    QList<Phonon::MediaSource> playlist;
-    /**
-     * @brief Index of the current track in #playlist (Qt4).
-     */
-    int playlistCurrentIndex;
 #else
     /**
      * @brief Player used to play music files (Qt5).
      */
     QMediaPlayer *player;
-    /**
-     * @brief Playlist containing music files to play (Qt5).
-     */
-    QMediaPlaylist playlist;
 #endif
     State _state; /**< @see #state */
     /**
@@ -190,23 +163,9 @@ private slots:
      */
     void updateTrackLabels();
     /**
-     * @brief Update playlistCurrentIndex to match newSource (Qt4).
+     * @brief Emits signal #playing() or #paused() depending on the new #player state.
      */
-    inline void updatePlaylistCurrentIndex(const Phonon::MediaSource &newSource) {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        playlistCurrentIndex = playlist.indexOf(newSource);
-#else
-        (void)newSource;
-#endif
-    }
-    /**
-     * @brief Emits signal #playing() or #paused() depending on the new #player state (Qt4).
-     */
-    void playerStateChanged(const Phonon::State newstate, const Phonon::State);
-    /**
-     * @brief Emits signal #playing() or #paused() depending on the new #player state (Qt5).
-     */
-    void playerStateChanged(const QMediaPlayer::State state);
+    void playerStateChanged();
     /**
      * @brief Adds a track to the #smoozikPlaylist.
      */

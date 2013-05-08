@@ -62,17 +62,19 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     player = new Phonon::MediaObject(this);
     Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
     Phonon::createPath(player, audioOutput);
-    playlistCurrentIndex = 0;
-    connect(player, SIGNAL(currentSourceChanged(Phonon::MediaSource)), this, SLOT(updatePlaylistCurrentIndex(Phonon::MediaSource)));
-    connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged(Phonon::State,Phonon::State)));
+    connect(player, SIGNAL(currentSourceChanged(Phonon::MediaSource)), this, SLOT(updateTrackLabels()));
+    connect(player, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(playerStateChanged()));
 #else
     player = new QMediaPlayer(this);
-    playlist.setPlaybackMode(QMediaPlaylist::Sequential);
-    player->setPlaylist(&playlist);
-    connect(player, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged(QMediaPlayer::State)));
+    player->setPlaylist(new QMediaPlaylist(player));
+    player->playlist()->setPlaybackMode(QMediaPlaylist::Sequential);
+    connect(player, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(updateTrackLabels()));
+    connect(player, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(playerStateChanged()));
 #endif
     connect(ui->playButton, SIGNAL(clicked()), player, SLOT(play()));
     connect(ui->pauseButton, SIGNAL(clicked()), player, SLOT(pause()));
+    connect(this, SIGNAL(currentTrackSet()), this, SLOT(updateTrackLabels()));
+    connect(this, SIGNAL(nextTrackSet()), this, SLOT(updateTrackLabels()));
 
     // Initialize main state machine which controls what is displayed
     QStateMachine *mainStateMachine = new QStateMachine(this);
@@ -108,7 +110,11 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     sendCurrentTrackState->addTransition(this, SIGNAL(currentTrackSent()), getTopTracksState);
     getTopTracksState->addTransition(this, SIGNAL(nextTrackSet()), sendNextTrackState);
     sendNextTrackState->addTransition(this, SIGNAL(nextTrackSent()), waitingState);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    waitingState->addTransition(player, SIGNAL(currentSourceChanged(Phonon::MediaSource)), sendCurrentTrackState);
+#else
     waitingState->addTransition(player, SIGNAL(currentMediaChanged(QMediaContent)), sendCurrentTrackState);
+#endif
 
     playerState->addTransition(this, SIGNAL(playing()), playingState);
     playerState->addTransition(this, SIGNAL(paused()), pausedState);
@@ -165,11 +171,6 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(submitLogin()));
     connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(nextTrack()));
 
-    // Connect playlist and actions
-    connect(player, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(updateTrackLabels()));
-    connect(this, SIGNAL(currentTrackSet()), this, SLOT(updateTrackLabels()));
-    connect(this, SIGNAL(nextTrackSet()), this, SLOT(updateTrackLabels()));
-
     // Start state machine
     mainStateMachine->start();
     playerStateMachine->start();
@@ -189,33 +190,24 @@ SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow()
 int SmoozikSimplestClientWindow::getCurrentTrackIndex()
 {
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    return smoozikPlaylist->indexOf(player->currentSource().url().toLocalFile());
 #else
-    if (playlist.mediaCount() >= 1) {
-        if ((player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) && playlist.currentIndex() >= 0 ) {
-            return smoozikPlaylist->indexOf(player->currentMedia().canonicalUrl().toLocalFile());
-        } else {
-            return smoozikPlaylist->indexOf(playlist.media(0).canonicalUrl().toLocalFile());
-        }
-    } else {
-        return -1;
-    }
+    return smoozikPlaylist->indexOf(player->currentMedia().canonicalUrl().toLocalFile());
 #endif
 }
 
 int SmoozikSimplestClientWindow::getNextTrackIndex()
 {
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    if (!player->queue().isEmpty()) {
+        return smoozikPlaylist->indexOf(player->queue().at(0).url().toLocalFile());
 #else
-    if (playlist.mediaCount() >= 2 && playlist.mediaCount() > playlist.currentIndex() + 1) {
-        if ((player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) && playlist.currentIndex() >= 0) {
-            return smoozikPlaylist->indexOf(playlist.media(playlist.currentIndex() + 1).canonicalUrl().toLocalFile());
-        } else {
-            return smoozikPlaylist->indexOf(playlist.media(1).canonicalUrl().toLocalFile());
-        }
+    if (player->playlist()->currentIndex() >= 0 && player->playlist()->mediaCount() > player->playlist()->currentIndex() + 1) {
+        return smoozikPlaylist->indexOf(player->playlist()->media(player->playlist()->currentIndex() + 1).canonicalUrl().toLocalFile());
+#endif
     } else {
         return -1;
     }
-#endif
 }
 
 
@@ -247,38 +239,28 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
         }
 
         case GetTopTracks : {
-            qDebug()<<"topTracksRetrieved";
 
             // Set mediaPlaylist from top tracks.
             SmoozikPlaylist topTracksPlaylist(xml["tracks"].toList());
 
-            qDebug()<<"toptracks";
-            qDebug()<<"n°1"<<topTracksPlaylist.value(0)->name();
-            qDebug()<<"n°2"<<topTracksPlaylist.value(1)->name();
-            qDebug()<<"n°3"<<topTracksPlaylist.value(2)->name();
-
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-            while( i < topTracksPlaylist.size()  && (playlist.count() < 2 || playlistCurrentIndex > playlist.count() - 1)) {
-                playlist.append(Phonon::MediaSource(topTracksPlaylist.value(i)->localId()));
-                i++;
-            }
-            player->clearQueue();
-            player->enqueue(playlist.mid(playlistCurrentIndex));
-#else
-            qDebug()<<"currentIndex"<<playlist.currentIndex()<<"mediaCount"<<playlist.mediaCount();
-            for (int i = -1 ; i < playlist.mediaCount() ; i++) {
-                if(!playlist.media(i).isNull()) {
-                    qDebug()<<i<<playlist.media(i).canonicalUrl().toLocalFile();
-                }
-            }
-            if (playlist.mediaCount() < 2 || playlist.currentIndex() >= playlist.mediaCount() - 2) {
+            if (player->queue().isEmpty()) {
 
-                playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(0)->localId()));
-                if(playlist.mediaCount() <= 1 || playlist.currentIndex() == playlist.mediaCount() - 1) {
-                    qDebug()<<"add current track";
+                if(player->currentSource().type() != Phonon::MediaSource::LocalFile) {
+                    player->setCurrentSource(Phonon::MediaSource(topTracksPlaylist.value(0)->localId()));
                     emit currentTrackSet();
                 } else {
-                    qDebug()<<"add next track";
+                    player->enqueue(Phonon::MediaSource(topTracksPlaylist.value(0)->localId()));
+                    emit nextTrackSet();
+                }
+            }
+#else
+            if (player->playlist()->mediaCount() < 2 || player->playlist()->currentIndex() >= player->playlist()->mediaCount() - 2) {
+
+                player->playlist()->addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(0)->localId()));
+                if(player->playlist()->mediaCount() == 1 || player->playlist()->currentIndex() == player->playlist()->mediaCount() - 1) {
+                    emit currentTrackSet();
+                } else {
                     emit nextTrackSet();
                 }
             }
@@ -287,13 +269,11 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
         }
 
         case SendCurrentTrack : {
-            qDebug()<<"currentTrackSent";
             emit currentTrackSent();
             break;
         }
 
         case SendNextTrack : {
-            qDebug()<<"nextTrackSent";
             emit nextTrackSent();
             break;
         }
@@ -327,7 +307,15 @@ void SmoozikSimplestClientWindow::loginError(QString errorMsg)
 
 void SmoozikSimplestClientWindow::sendCurrentTrack()
 {
-    qDebug()<<"sendCurrentTrack";
+    // If player is not started yet, it is a good time to do it
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    if (player->state() != Phonon::PlayingState && player->state() != Phonon::PausedState) {
+#else
+    if (player->state() != QMediaPlayer::PlayingState && player->state() != QMediaPlayer::PausedState) {
+#endif
+        player->play();
+    }
+
     int currentTrackIndex = getCurrentTrackIndex();
     if (currentTrackIndex >= 0 && currentTrackIndex < smoozikPlaylist->count()) {
         SmoozikTrack *currentTrack = smoozikPlaylist->value(currentTrackIndex);
@@ -343,12 +331,6 @@ void SmoozikSimplestClientWindow::sendCurrentTrack()
 
 void SmoozikSimplestClientWindow::sendNextTrack()
 {
-    qDebug()<<"sendNextTrack";
-    // If player is not started yet, it is a good time to do it
-    if (player->state() == QMediaPlayer::StoppedState) {
-        player->play();
-    }
-
     int nextTrackIndex = getNextTrackIndex();
     if (nextTrackIndex >= 0 && nextTrackIndex < smoozikPlaylist->count()) {
         SmoozikTrack *nextTrack = smoozikPlaylist->value(nextTrackIndex);
@@ -387,8 +369,6 @@ void SmoozikSimplestClientWindow::retrieveTracksDialog()
 
 void SmoozikSimplestClientWindow::updateTrackLabels()
 {
-    qDebug()<<"update labels";
-
     int currentTrackIndex = getCurrentTrackIndex();
     if (currentTrackIndex >= 0 && currentTrackIndex < smoozikPlaylist->count()) {
         SmoozikTrack *currentTrack = smoozikPlaylist->value(currentTrackIndex);
@@ -406,30 +386,21 @@ void SmoozikSimplestClientWindow::updateTrackLabels()
     }
 }
 
-void SmoozikSimplestClientWindow::playerStateChanged(const Phonon::State newstate, const Phonon::State)
+void SmoozikSimplestClientWindow::playerStateChanged()
 {
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    if (newstate == Phonon::PlayingState) {
-        emit playing();
-    } else if (newstate == Phonon::PausedState) {
-        emit paused();
-    }
+    if (player->state() == Phonon::PlayingState) {
 #else
-    (void)newstate;
+    if (player->state() == QMediaPlayer::PlayingState) {
 #endif
-}
-
-void SmoozikSimplestClientWindow::playerStateChanged(const QMediaPlayer::State state)
-{
+        emit playing();
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    (void)state;
+    } else if (player->state() == Phonon::PausedState) {
 #else
-    if (state == QMediaPlayer::PlayingState) {
-        emit playing();
-    } else if (state == QMediaPlayer::PausedState) {
+    } else if (player->state() == QMediaPlayer::PausedState) {
+#endif
         emit paused();
     }
-#endif
 }
 
 void SmoozikSimplestClientWindow::maxPlaylistSizeReachedMessage()
@@ -449,10 +420,13 @@ void SmoozikSimplestClientWindow::noTrackRetrievedMessage()
 void SmoozikSimplestClientWindow::nextTrack()
 {
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    if (!player->queue().isEmpty()) {
+        player->setCurrentSource(player->queue().value(0));
+        player->play();
+    }
 #else
-    // Check if there is a next track in playlist
-    if (playlist.mediaCount() >= 2 && playlist.currentIndex() <= playlist.mediaCount() - 2) {
-        playlist.next();
+    if (player->playlist()->mediaCount() >= 2 && player->playlist()->currentIndex() <= player->playlist()->mediaCount() - 2) {
+        player->playlist()->next();
     }
 #endif
 }
