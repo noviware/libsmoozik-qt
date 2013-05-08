@@ -31,24 +31,9 @@
 #include <phonon/AudioOutput>
 #include <phonon/MediaSource>
 #include <QDesktopServices>
-// As slots must be declared no matter the Qt version, QMediaPlayer namespace need to be declared.
-namespace QMediaPlayer
-{
-enum State {
-    Empty
-};
-}
 #else
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
-// As slots must be declared no matter the Qt version, Phonon namespace need to be declared.
-namespace Phonon
-{
-class MediaSource;
-enum State {
-    Empty
-};
-}
 #include <QStandardPaths>
 #endif
 
@@ -78,9 +63,10 @@ public:
     enum State {
         Login,
         StartParty,
-        RetrieveTracks,
         SendPlaylist,
-        GetTopTracks
+        GetTopTracks,
+        SendCurrentTrack,
+        SendNextTrack
     };
     inline State state() const {
         return _state;
@@ -106,29 +92,27 @@ private:
      * @brief Player used to play music files (Qt4).
      */
     Phonon::MediaObject *player;
-    /**
-     * @brief Playlist containing music files to play (Qt4).
-     */
-    QList<Phonon::MediaSource> playlist;
-    /**
-     * @brief Index of the current track in #playlist (Qt4).
-     */
-    int playlistCurrentIndex;
 #else
     /**
      * @brief Player used to play music files (Qt5).
      */
     QMediaPlayer *player;
-    /**
-     * @brief Playlist containing music files to play (Qt5).
-     */
-    QMediaPlaylist playlist;
 #endif
     State _state; /**< @see #state */
     /**
      * @brief Path to the directory currently used to fetch tracks.
      */
     QString _dirName;
+    /**
+     * @brief Returns index of current track in #smoozikPlaylist
+     * @retval 1 if current track cannot be found in #smoozikPlaylist
+     */
+    int getCurrentTrackIndex();
+    /**
+     * @brief Returns index of current track in #smoozikPlaylist
+     * @retval 1 if current track cannot be found in #smoozikPlaylist
+     */
+    int getNextTrackIndex();
 
 private slots:
     /**
@@ -162,29 +146,26 @@ private slots:
     inline void sendPlaylist() {
         smoozikManager->sendPlaylist(smoozikPlaylist);
     }
-
+    /**
+     * @brief Sets current track in Smoozik server
+     */
+    void sendCurrentTrack();
+    /**
+     * @brief Sets next track in Smoozik server
+     */
+    void sendNextTrack();
     /**
      * @brief Asks user to select a folder containing music files until a non-empty playlist can be filled.
      */
     void retrieveTracksDialog();
     /**
-     * @brief Update playlistCurrentIndex to match newSource (Qt4).
+     * @brief Update current track label and next track label with data from playlist
      */
-    inline void updatePlaylistCurrentIndex(const Phonon::MediaSource &newSource) {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        playlistCurrentIndex = playlist.indexOf(newSource);
-#else
-        (void)newSource;
-#endif
-    }
+    void updateTrackLabels();
     /**
-     * @brief Emits signal #playing() or #paused() depending on the new #player state (Qt4).
+     * @brief Emits signal #playing() or #paused() depending on the new #player state.
      */
-    void playerStateChanged(const Phonon::State newstate, const Phonon::State);
-    /**
-     * @brief Emits signal #playing() or #paused() depending on the new #player state (Qt5).
-     */
-    void playerStateChanged(const QMediaPlayer::State state);
+    void playerStateChanged();
     /**
      * @brief Adds a track to the #smoozikPlaylist.
      */
@@ -200,6 +181,10 @@ private slots:
      * @brief Displays a message box warning about no track being present in current directory then call retrieveTracksDialog().
      */
     void noTrackRetrievedMessage();
+    /**
+     * @brief Plays next track in playlist
+     */
+    void nextTrack();
 
 signals:
     /**
@@ -218,6 +203,22 @@ signals:
      * @brief This signal is emitted when playlist has been sent to Smoozik server.
      */
     void playlistSent();
+    /**
+     * @brief This signal is emitted when current track has been set in local playlist and can be played.
+     */
+    void currentTrackSet();
+    /**
+     * @brief This signal is emitted when next track has been set in local playlist and can be played.
+     */
+    void nextTrackSet();
+    /**
+     * @brief This signal is emitted when current track has been set in Smoozik server.
+     */
+    void currentTrackSent();
+    /**
+     * @brief This signal is emitted when next track has been set in Smoozik server.
+     */
+    void nextTrackSent();
     /**
      * @brief This signal is emitted when user request disconnection.
      */
