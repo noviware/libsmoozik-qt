@@ -78,9 +78,10 @@ public:
     enum State {
         Login,
         StartParty,
-        RetrieveTracks,
         SendPlaylist,
-        GetTopTracks
+        GetTopTracks,
+        SendCurrentTrack,
+        SendNextTrack
     };
     inline State state() const {
         return _state;
@@ -162,11 +163,22 @@ private slots:
     inline void sendPlaylist() {
         smoozikManager->sendPlaylist(smoozikPlaylist);
     }
-
+    /**
+     * @brief Sets current track in Smoozik server
+     */
+    void sendCurrentTrack();
+    /**
+     * @brief Sets next track in Smoozik server
+     */
+    void sendNextTrack();
     /**
      * @brief Asks user to select a folder containing music files until a non-empty playlist can be filled.
      */
     void retrieveTracksDialog();
+    /**
+     * @brief Update current track label and next track label with data from playlist
+     */
+    void updateTrackLabels();
     /**
      * @brief Update playlistCurrentIndex to match newSource (Qt4).
      */
@@ -218,6 +230,22 @@ signals:
      * @brief This signal is emitted when playlist has been sent to Smoozik server.
      */
     void playlistSent();
+    /**
+     * @brief This signal is emitted when current track has been set in local playlist and can be played.
+     */
+    void currentTrackSet();
+    /**
+     * @brief This signal is emitted when next track has been set in local playlist and can be played.
+     */
+    void nextTrackSet();
+    /**
+     * @brief This signal is emitted when current track has been set in Smoozik server.
+     */
+    void currentTrackSent();
+    /**
+     * @brief This signal is emitted when next track has been set in Smoozik server.
+     */
+    void nextTrackSent();
     /**
      * @brief This signal is emitted when user request disconnection.
      */

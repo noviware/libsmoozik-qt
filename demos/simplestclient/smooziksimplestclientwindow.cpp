@@ -75,28 +75,43 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     connect(ui->pauseButton, SIGNAL(clicked()), player, SLOT(pause()));
 
     // Initialize main state machine which controls what is displayed
-    QStateMachine *stateMachine = new QStateMachine(this);
-    QState *mainState = new QState(stateMachine);
+    QStateMachine *mainStateMachine = new QStateMachine(this);
+    QState *mainState = new QState(mainStateMachine);
     QState *loginState = new QState(mainState);
     QState *startPartyState = new QState(mainState);
     QState *retrieveTracksState = new QState(mainState);
     QState *sendPlaylistState = new QState(mainState);
     QState *getTopTracksState = new QState(mainState);
-    QState *playerState = new QState(mainState);
+    QState *partyState = new QState(mainState);
+    QState *waitingState = new QState(partyState);
+    QState *sendCurrentTrackState = new QState(partyState);
+    QState *sendNextTrackState = new QState(partyState);
+
+    QStateMachine *playerStateMachine = new QStateMachine(this);
+    QState *playerState = new QState(playerStateMachine);
     QState *playingState = new QState(playerState);
     QState *pausedState = new QState(playerState);
 
-    // Define state transitions
-    stateMachine->setInitialState(mainState);
+    // Define state initial states and transitions
+    mainStateMachine->setInitialState(mainState);
     mainState->setInitialState(loginState);
+    partyState->setInitialState(waitingState);
+    playerStateMachine->setInitialState(playerState);
+    playerState->setInitialState(pausedState);
 
     mainState->addTransition(this, SIGNAL(disconnect()), loginState);
-    mainState->addTransition(this, SIGNAL(playing()), playingState);
-    mainState->addTransition(this, SIGNAL(paused()), pausedState);
     loginState->addTransition(this, SIGNAL(loggedIn()), startPartyState);
     startPartyState->addTransition(this, SIGNAL(partyStarted()), retrieveTracksState);
     retrieveTracksState->addTransition(this, SIGNAL(tracksRetrieved()), sendPlaylistState);
     sendPlaylistState->addTransition(this, SIGNAL(playlistSent()), getTopTracksState);
+    getTopTracksState->addTransition(this, SIGNAL(currentTrackSet()), sendCurrentTrackState);
+    sendCurrentTrackState->addTransition(this, SIGNAL(currentTrackSent()), getTopTracksState);
+    getTopTracksState->addTransition(this, SIGNAL(nextTrackSet()), sendNextTrackState);
+    sendNextTrackState->addTransition(this, SIGNAL(nextTrackSent()), waitingState);
+    waitingState->addTransition(player, SIGNAL(currentMediaChanged(QMediaContent)), sendCurrentTrackState);
+
+    playerState->addTransition(this, SIGNAL(playing()), playingState);
+    playerState->addTransition(this, SIGNAL(paused()), pausedState);
 
     // Define state properties
     loginState->assignProperty(this, "state", Login);
@@ -109,7 +124,6 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     startPartyState->assignProperty(this, "state", StartParty);
     startPartyState->assignProperty(ui->loginStateLabel, "text", tr("Starting party..."));
 
-    retrieveTracksState->assignProperty(this, "state", RetrieveTracks);
     retrieveTracksState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->loadingPage));
     retrieveTracksState->assignProperty(ui->loginStateLabel, "text", tr("Connected"));
     retrieveTracksState->assignProperty(ui->loadingLabel, "text", tr("Retrieving tracks..."));
@@ -119,8 +133,17 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
 
     getTopTracksState->assignProperty(this, "state", GetTopTracks);
     getTopTracksState->assignProperty(ui->loadingLabel, "text", tr("Get top tracks..."));
+    getTopTracksState->assignProperty(ui->nextButton, "enabled", false);
 
-    playerState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->playerPage));
+    partyState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->playerPage));
+
+    sendCurrentTrackState->assignProperty(this, "state", SendCurrentTrack);
+    sendCurrentTrackState->assignProperty(ui->nextButton, "enabled", false);
+
+    sendNextTrackState->assignProperty(this, "state", SendNextTrack);
+    sendNextTrackState->assignProperty(ui->nextButton, "enabled", false);
+
+    waitingState->assignProperty(ui->nextButton, "enabled", true);
 
     playingState->assignProperty(ui->playButton, "visible", false);
     playingState->assignProperty(ui->pauseButton, "visible", true);
@@ -133,14 +156,23 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     connect(retrieveTracksState, SIGNAL(entered()), this, SLOT(retrieveTracksDialog()));
     connect(sendPlaylistState, SIGNAL(entered()), this, SLOT(sendPlaylist()));
     connect(getTopTracksState, SIGNAL(entered()), this, SLOT(getTopTracks()));
+    connect(sendCurrentTrackState, SIGNAL(entered()), this, SLOT(sendCurrentTrack()));
+    connect(sendNextTrackState, SIGNAL(entered()), this, SLOT(sendNextTrack()));
 
     // Connect gui and actions
     connect(ui->usernameLineEdit, SIGNAL(returnPressed()), this, SLOT(submitLogin()));
     connect(ui->passwordLineEdit, SIGNAL(returnPressed()), this, SLOT(submitLogin()));
     connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(submitLogin()));
+    connect(ui->nextButton, SIGNAL(clicked()), &playlist, SLOT(next()));
+
+    // Connect playlist and actions
+    connect(player, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(updateTrackLabels()));
+    connect(this, SIGNAL(currentTrackSet()), this, SLOT(updateTrackLabels()));
+    connect(this, SIGNAL(nextTrackSet()), this, SLOT(updateTrackLabels()));
 
     // Start state machine
-    stateMachine->start();
+    mainStateMachine->start();
+    playerStateMachine->start();
 }
 
 SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow()
@@ -183,11 +215,11 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
         }
 
         case GetTopTracks : {
+            qDebug()<<"topTracksRetrieved";
 
             // Set mediaPlaylist from top tracks.
             SmoozikPlaylist topTracksPlaylist(xml["tracks"].toList());
 
-            int i = 0;
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
             while( i < topTracksPlaylist.size()  && (playlist.count() < 2 || playlistCurrentIndex > playlist.count() - 1)) {
                 playlist.append(Phonon::MediaSource(topTracksPlaylist.value(i)->localId()));
@@ -196,21 +228,37 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
             player->clearQueue();
             player->enqueue(playlist.mid(playlistCurrentIndex));
 #else
-            while( i < topTracksPlaylist.size()  && (playlist.mediaCount() < 2 || playlist.currentIndex() > playlist.mediaCount() - 1)) {
-                playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(i)->localId()));
-                i++;
+            qDebug()<<"currentIndex"<<playlist.currentIndex()<<"mediaCount"<<playlist.mediaCount();
+            for (int i = -1 ; i < playlist.mediaCount() ; i++) {
+                if(!playlist.media(i).isNull()) {
+                    qDebug()<<i<<playlist.media(i).canonicalUrl().toLocalFile();
+                }
             }
-#endif
+            if (playlist.mediaCount() < 2 || playlist.currentIndex() >= playlist.mediaCount() - 2) {
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-            if (playlist.count() < 2) {
-#else
-            if (playlist.mediaCount() < 2) {
-#endif
-                loginError(tr("A problem occured, the playlist could not be filled with enough playable tracks."));
-            } else {
-                player->play();
+                if(playlist.mediaCount() == 0 || playlist.currentIndex() == playlist.mediaCount() - 1) {
+                    qDebug()<<"add current track";
+                    playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(0)->localId()));
+                    emit currentTrackSet();
+                } else {
+                    qDebug()<<"add next track";
+                    playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(1)->localId()));
+                    emit nextTrackSet();
+                }
             }
+#endif
+            break;
+        }
+
+        case SendCurrentTrack : {
+            qDebug()<<"currentTrackSent";
+            emit currentTrackSent();
+            break;
+        }
+
+        case SendNextTrack : {
+            qDebug()<<"nextTrackSent";
+            emit nextTrackSent();
             break;
         }
 
@@ -241,6 +289,46 @@ void SmoozikSimplestClientWindow::loginError(QString errorMsg)
     ui->loginStateLabel->setText(errorMsg);
 }
 
+void SmoozikSimplestClientWindow::sendCurrentTrack()
+{
+    SmoozikTrack *track;
+    if (player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) {
+        track = smoozikPlaylist->value(smoozikPlaylist->indexOf(player->currentMedia().canonicalUrl().toLocalFile()));
+    } else {
+        track = smoozikPlaylist->value(smoozikPlaylist->indexOf(playlist.media(0).canonicalUrl().toLocalFile()));
+    }
+
+    if (track->localId().isEmpty()) {
+        loginError("Current track could not be found in playlist.");
+        return;
+    }
+
+    smoozikManager->setTrack(track, 0);
+}
+
+void SmoozikSimplestClientWindow::sendNextTrack()
+{
+    qDebug()<<"sendNextTrack";
+    // If player is not started yet, it is a good time to do it
+    if (player->state() == QMediaPlayer::StoppedState) {
+        player->play();
+    }
+
+    SmoozikTrack *track;
+    if (player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) {
+        track = smoozikPlaylist->value(smoozikPlaylist->indexOf(playlist.media(playlist.currentIndex() + 1).canonicalUrl().toLocalFile()));
+    } else {
+        track = smoozikPlaylist->value(smoozikPlaylist->indexOf(playlist.media(1).canonicalUrl().toLocalFile()));
+    }
+
+    if (track->localId().isEmpty()) {
+        loginError("Next track could not be found in playlist.");
+        return;
+    }
+
+    smoozikManager->setTrack(track, 1);
+}
+
 void SmoozikSimplestClientWindow::retrieveTracksDialog()
 {
     smoozikPlaylist->clear();
@@ -261,7 +349,46 @@ void SmoozikSimplestClientWindow::retrieveTracksDialog()
 
     } else {
         emit disconnect();
-        return;
+    }
+}
+
+void SmoozikSimplestClientWindow::updateTrackLabels()
+{
+    qDebug()<<"update labels";
+    if (playlist.mediaCount() >= 1) {
+        int currentTrackIndex = -1;
+        if ((player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) && playlist.currentIndex() >= 0 ) {
+            currentTrackIndex = smoozikPlaylist->indexOf(player->currentMedia().canonicalUrl().toLocalFile());
+        } else {
+            currentTrackIndex = smoozikPlaylist->indexOf(playlist.media(0).canonicalUrl().toLocalFile());
+        }
+        if (currentTrackIndex >= 0 && currentTrackIndex < smoozikPlaylist->count()) {
+            SmoozikTrack *currentTrack = smoozikPlaylist->value(currentTrackIndex);
+            ui->currentTrackLabel->setText(QString("%1 - %2").arg(currentTrack->name()).arg(currentTrack->artist()));
+        } else {
+            ui->currentTrackLabel->setText(QString(" - "));
+        }
+    } else {
+        ui->currentTrackLabel->setText(QString(" - "));
+    }
+
+
+    if (playlist.mediaCount() >= 2 && playlist.mediaCount() > playlist.currentIndex() + 1) {
+        int nextTrackIndex = -1;
+        if ((player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) && playlist.currentIndex() >= 0) {
+            nextTrackIndex = smoozikPlaylist->indexOf(playlist.media(playlist.currentIndex() + 1).canonicalUrl().toLocalFile());
+        } else {
+            nextTrackIndex = smoozikPlaylist->indexOf(playlist.media(1).canonicalUrl().toLocalFile());
+        }
+
+        if (nextTrackIndex >= 0 && nextTrackIndex < smoozikPlaylist->count()) {
+            SmoozikTrack *nextTrack = smoozikPlaylist->value(nextTrackIndex);
+            ui->nextTrackLabel->setText(QString("%1 - %2").arg(nextTrack->name()).arg(nextTrack->artist()));
+        } else {
+            ui->nextTrackLabel->setText(QString(" - "));
+        }
+    } else {
+        ui->nextTrackLabel->setText(QString(" - "));
     }
 }
 
