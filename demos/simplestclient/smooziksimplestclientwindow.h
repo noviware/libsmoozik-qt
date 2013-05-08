@@ -130,6 +130,16 @@ private:
      * @brief Path to the directory currently used to fetch tracks.
      */
     QString _dirName;
+    /**
+     * @brief Returns index of current track in #smoozikPlaylist
+     * @retval 1 if current track cannot be found in #smoozikPlaylist
+     */
+    int getCurrentTrackIndex();
+    /**
+     * @brief Returns index of current track in #smoozikPlaylist
+     * @retval 1 if current track cannot be found in #smoozikPlaylist
+     */
+    int getNextTrackIndex();
 
 private slots:
     /**
@@ -212,6 +222,10 @@ private slots:
      * @brief Displays a message box warning about no track being present in current directory then call retrieveTracksDialog().
      */
     void noTrackRetrievedMessage();
+    /**
+     * @brief Plays next track in playlist
+     */
+    void nextTrack();
 
 signals:
     /**

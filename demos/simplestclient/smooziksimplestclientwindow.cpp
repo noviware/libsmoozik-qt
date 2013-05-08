@@ -163,7 +163,7 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     connect(ui->usernameLineEdit, SIGNAL(returnPressed()), this, SLOT(submitLogin()));
     connect(ui->passwordLineEdit, SIGNAL(returnPressed()), this, SLOT(submitLogin()));
     connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(submitLogin()));
-    connect(ui->nextButton, SIGNAL(clicked()), &playlist, SLOT(next()));
+    connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(nextTrack()));
 
     // Connect playlist and actions
     connect(player, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(updateTrackLabels()));
@@ -184,6 +184,38 @@ SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow()
     delete smoozikPlaylist;
 
     delete ui;
+}
+
+int SmoozikSimplestClientWindow::getCurrentTrackIndex()
+{
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#else
+    if (playlist.mediaCount() >= 1) {
+        if ((player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) && playlist.currentIndex() >= 0 ) {
+            return smoozikPlaylist->indexOf(player->currentMedia().canonicalUrl().toLocalFile());
+        } else {
+            return smoozikPlaylist->indexOf(playlist.media(0).canonicalUrl().toLocalFile());
+        }
+    } else {
+        return -1;
+    }
+#endif
+}
+
+int SmoozikSimplestClientWindow::getNextTrackIndex()
+{
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#else
+    if (playlist.mediaCount() >= 2 && playlist.mediaCount() > playlist.currentIndex() + 1) {
+        if ((player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) && playlist.currentIndex() >= 0) {
+            return smoozikPlaylist->indexOf(playlist.media(playlist.currentIndex() + 1).canonicalUrl().toLocalFile());
+        } else {
+            return smoozikPlaylist->indexOf(playlist.media(1).canonicalUrl().toLocalFile());
+        }
+    } else {
+        return -1;
+    }
+#endif
 }
 
 
@@ -220,6 +252,11 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
             // Set mediaPlaylist from top tracks.
             SmoozikPlaylist topTracksPlaylist(xml["tracks"].toList());
 
+            qDebug()<<"toptracks";
+            qDebug()<<"n°1"<<topTracksPlaylist.value(0)->name();
+            qDebug()<<"n°2"<<topTracksPlaylist.value(1)->name();
+            qDebug()<<"n°3"<<topTracksPlaylist.value(2)->name();
+
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
             while( i < topTracksPlaylist.size()  && (playlist.count() < 2 || playlistCurrentIndex > playlist.count() - 1)) {
                 playlist.append(Phonon::MediaSource(topTracksPlaylist.value(i)->localId()));
@@ -236,13 +273,12 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
             }
             if (playlist.mediaCount() < 2 || playlist.currentIndex() >= playlist.mediaCount() - 2) {
 
-                if(playlist.mediaCount() == 0 || playlist.currentIndex() == playlist.mediaCount() - 1) {
+                playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(0)->localId()));
+                if(playlist.mediaCount() <= 1 || playlist.currentIndex() == playlist.mediaCount() - 1) {
                     qDebug()<<"add current track";
-                    playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(0)->localId()));
                     emit currentTrackSet();
                 } else {
                     qDebug()<<"add next track";
-                    playlist.addMedia(QUrl::fromLocalFile(topTracksPlaylist.value(1)->localId()));
                     emit nextTrackSet();
                 }
             }
@@ -291,19 +327,18 @@ void SmoozikSimplestClientWindow::loginError(QString errorMsg)
 
 void SmoozikSimplestClientWindow::sendCurrentTrack()
 {
-    SmoozikTrack *track;
-    if (player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) {
-        track = smoozikPlaylist->value(smoozikPlaylist->indexOf(player->currentMedia().canonicalUrl().toLocalFile()));
-    } else {
-        track = smoozikPlaylist->value(smoozikPlaylist->indexOf(playlist.media(0).canonicalUrl().toLocalFile()));
-    }
+    qDebug()<<"sendCurrentTrack";
+    int currentTrackIndex = getCurrentTrackIndex();
+    if (currentTrackIndex >= 0 && currentTrackIndex < smoozikPlaylist->count()) {
+        SmoozikTrack *currentTrack = smoozikPlaylist->value(currentTrackIndex);
 
-    if (track->localId().isEmpty()) {
-        loginError("Current track could not be found in playlist.");
-        return;
-    }
+        if (currentTrack->localId().isEmpty()) {
+            loginError("Current track could not be found in playlist.");
+            return;
+        }
 
-    smoozikManager->setTrack(track, 0);
+        smoozikManager->setTrack(currentTrack, 0);
+    }
 }
 
 void SmoozikSimplestClientWindow::sendNextTrack()
@@ -314,19 +349,17 @@ void SmoozikSimplestClientWindow::sendNextTrack()
         player->play();
     }
 
-    SmoozikTrack *track;
-    if (player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) {
-        track = smoozikPlaylist->value(smoozikPlaylist->indexOf(playlist.media(playlist.currentIndex() + 1).canonicalUrl().toLocalFile()));
-    } else {
-        track = smoozikPlaylist->value(smoozikPlaylist->indexOf(playlist.media(1).canonicalUrl().toLocalFile()));
-    }
+    int nextTrackIndex = getNextTrackIndex();
+    if (nextTrackIndex >= 0 && nextTrackIndex < smoozikPlaylist->count()) {
+        SmoozikTrack *nextTrack = smoozikPlaylist->value(nextTrackIndex);
 
-    if (track->localId().isEmpty()) {
-        loginError("Next track could not be found in playlist.");
-        return;
-    }
+        if (nextTrack->localId().isEmpty()) {
+            loginError("Next track could not be found in playlist.");
+            return;
+        }
 
-    smoozikManager->setTrack(track, 1);
+        smoozikManager->setTrack(nextTrack, 1);
+    }
 }
 
 void SmoozikSimplestClientWindow::retrieveTracksDialog()
@@ -355,38 +388,19 @@ void SmoozikSimplestClientWindow::retrieveTracksDialog()
 void SmoozikSimplestClientWindow::updateTrackLabels()
 {
     qDebug()<<"update labels";
-    if (playlist.mediaCount() >= 1) {
-        int currentTrackIndex = -1;
-        if ((player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) && playlist.currentIndex() >= 0 ) {
-            currentTrackIndex = smoozikPlaylist->indexOf(player->currentMedia().canonicalUrl().toLocalFile());
-        } else {
-            currentTrackIndex = smoozikPlaylist->indexOf(playlist.media(0).canonicalUrl().toLocalFile());
-        }
-        if (currentTrackIndex >= 0 && currentTrackIndex < smoozikPlaylist->count()) {
-            SmoozikTrack *currentTrack = smoozikPlaylist->value(currentTrackIndex);
-            ui->currentTrackLabel->setText(QString("%1 - %2").arg(currentTrack->name()).arg(currentTrack->artist()));
-        } else {
-            ui->currentTrackLabel->setText(QString(" - "));
-        }
+
+    int currentTrackIndex = getCurrentTrackIndex();
+    if (currentTrackIndex >= 0 && currentTrackIndex < smoozikPlaylist->count()) {
+        SmoozikTrack *currentTrack = smoozikPlaylist->value(currentTrackIndex);
+        ui->currentTrackLabel->setText(QString("%1 - %2").arg(currentTrack->name()).arg(currentTrack->artist()));
     } else {
         ui->currentTrackLabel->setText(QString(" - "));
     }
 
-
-    if (playlist.mediaCount() >= 2 && playlist.mediaCount() > playlist.currentIndex() + 1) {
-        int nextTrackIndex = -1;
-        if ((player->state() == QMediaPlayer::PausedState || player->state() == QMediaPlayer::PlayingState) && playlist.currentIndex() >= 0) {
-            nextTrackIndex = smoozikPlaylist->indexOf(playlist.media(playlist.currentIndex() + 1).canonicalUrl().toLocalFile());
-        } else {
-            nextTrackIndex = smoozikPlaylist->indexOf(playlist.media(1).canonicalUrl().toLocalFile());
-        }
-
-        if (nextTrackIndex >= 0 && nextTrackIndex < smoozikPlaylist->count()) {
-            SmoozikTrack *nextTrack = smoozikPlaylist->value(nextTrackIndex);
-            ui->nextTrackLabel->setText(QString("%1 - %2").arg(nextTrack->name()).arg(nextTrack->artist()));
-        } else {
-            ui->nextTrackLabel->setText(QString(" - "));
-        }
+    int nextTrackIndex = getNextTrackIndex();
+    if (nextTrackIndex >= 0 && nextTrackIndex < smoozikPlaylist->count()) {
+        SmoozikTrack *nextTrack = smoozikPlaylist->value(nextTrackIndex);
+        ui->nextTrackLabel->setText(QString("%1 - %2").arg(nextTrack->name()).arg(nextTrack->artist()));
     } else {
         ui->nextTrackLabel->setText(QString(" - "));
     }
@@ -430,4 +444,15 @@ void SmoozikSimplestClientWindow::noTrackRetrievedMessage()
     messageBox.exec();
 
     retrieveTracksDialog();
+}
+
+void SmoozikSimplestClientWindow::nextTrack()
+{
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#else
+    // Check if there is a next track in playlist
+    if (playlist.mediaCount() >= 2 && playlist.currentIndex() <= playlist.mediaCount() - 2) {
+        playlist.next();
+    }
+#endif
 }
