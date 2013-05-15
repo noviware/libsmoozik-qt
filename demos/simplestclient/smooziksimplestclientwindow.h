@@ -104,15 +104,21 @@ private:
      */
     QString _dirName;
     /**
-     * @brief Returns index of current track in #smoozikPlaylist
-     * @retval 1 if current track cannot be found in #smoozikPlaylist
+     * @brief Returns info about current track
+     * @retval localId LocalId (path) of the current track
+     * @retval name Name of the current track
+     * @retval artist Artist of the current track
+     * @retval album Album of the current track
      */
-    int getCurrentTrackIndex();
+    void getCurrentTrackInfo(QString *localId, QString *name, QString *artist, QString *album);
     /**
-     * @brief Returns index of current track in #smoozikPlaylist
-     * @retval 1 if current track cannot be found in #smoozikPlaylist
+     * @brief Returns info about coming track
+     * @retval localId LocalId (path) of the coming track
+     * @retval name Name of the coming track
+     * @retval artist Artist of the coming track
+     * @retval album Album of the coming track
      */
-    int getNextTrackIndex();
+    void getNextTrackInfo(QString *localId, QString *name, QString *artist, QString *album);
 
 private slots:
     /**
@@ -125,9 +131,13 @@ private slots:
      */
     void submitLogin();
     /**
-     * @brief Displays error message and requests new login.
+     * @brief Disconnect user.
      */
-    void loginError(QString errorMsg);
+    void disconnect();
+    /**
+     * @brief Displays error message and disconnect user.
+     */
+    void error(QString errorMsg);
     /**
      * @brief Starts a party using #smoozikManager.
      */
@@ -220,9 +230,9 @@ signals:
      */
     void nextTrackSent();
     /**
-     * @brief This signal is emitted when user request disconnection.
+     * @brief This signal is emitted when user is disconnected.
      */
-    void disconnect();
+    void disconnected();
     /**
      * @brief This signal is emitted when player starts playing.
      */

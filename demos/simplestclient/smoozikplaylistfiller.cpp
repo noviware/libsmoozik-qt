@@ -100,7 +100,8 @@ void SmoozikPlaylistFiller::fillPlaylist()
     emit finished();
 }
 
-void SmoozikPlaylistFiller::abort() {
+void SmoozikPlaylistFiller::abort()
+{
     mutex.lock();
     _abort = true;
     mutex.unlock();

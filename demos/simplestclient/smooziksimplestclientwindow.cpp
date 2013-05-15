@@ -81,10 +81,11 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     QState *mainState = new QState(mainStateMachine);
     QState *loginState = new QState(mainState);
     QState *startPartyState = new QState(mainState);
-    QState *retrieveTracksState = new QState(mainState);
-    QState *sendPlaylistState = new QState(mainState);
-    QState *getTopTracksState = new QState(mainState);
-    QState *partyState = new QState(mainState);
+    QState *connectedState = new QState(mainState);
+    QState *retrieveTracksState = new QState(connectedState);
+    QState *sendPlaylistState = new QState(connectedState);
+    QState *getTopTracksState = new QState(connectedState);
+    QState *partyState = new QState(connectedState);
     QState *waitingState = new QState(partyState);
     QState *sendCurrentTrackState = new QState(partyState);
     QState *sendNextTrackState = new QState(partyState);
@@ -97,13 +98,15 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     // Define state initial states and transitions
     mainStateMachine->setInitialState(mainState);
     mainState->setInitialState(loginState);
+    connectedState->setInitialState(retrieveTracksState);
     partyState->setInitialState(waitingState);
     playerStateMachine->setInitialState(playerState);
     playerState->setInitialState(pausedState);
 
-    mainState->addTransition(this, SIGNAL(disconnect()), loginState);
+    mainState->addTransition(this, SIGNAL(disconnected()), loginState);
     loginState->addTransition(this, SIGNAL(loggedIn()), startPartyState);
-    startPartyState->addTransition(this, SIGNAL(partyStarted()), retrieveTracksState);
+    startPartyState->addTransition(this, SIGNAL(partyStarted()), connectedState);
+    connectedState->addTransition(ui->changePlaylistButton, SIGNAL(clicked()), retrieveTracksState);
     retrieveTracksState->addTransition(this, SIGNAL(tracksRetrieved()), sendPlaylistState);
     sendPlaylistState->addTransition(this, SIGNAL(playlistSent()), getTopTracksState);
     getTopTracksState->addTransition(this, SIGNAL(currentTrackSet()), sendCurrentTrackState);
@@ -123,25 +126,35 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     loginState->assignProperty(this, "state", Login);
     loginState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->loginPage));
     loginState->assignProperty(ui->loginButton, "enabled", true);
+    loginState->assignProperty(ui->disconnectButton, "visible", false);
+    loginState->assignProperty(ui->changePlaylistButton, "visible", false);
     loginState->assignProperty(ui->usernameLineEdit, "enabled", true);
     loginState->assignProperty(ui->passwordLineEdit, "enabled", true);
     loginState->assignProperty(ui->loginStateLabel, "text", QString());
 
     startPartyState->assignProperty(this, "state", StartParty);
     startPartyState->assignProperty(ui->loginStateLabel, "text", tr("Starting party..."));
+    startPartyState->assignProperty(ui->disconnectButton, "visible", false);
+    startPartyState->assignProperty(ui->changePlaylistButton, "visible", false);
+
+    connectedState->assignProperty(ui->disconnectButton, "visible", true);
 
     retrieveTracksState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->loadingPage));
     retrieveTracksState->assignProperty(ui->loginStateLabel, "text", tr("Connected"));
     retrieveTracksState->assignProperty(ui->loadingLabel, "text", tr("Retrieving tracks..."));
+    retrieveTracksState->assignProperty(ui->changePlaylistButton, "visible", false);
 
     sendPlaylistState->assignProperty(this, "state", SendPlaylist);
     sendPlaylistState->assignProperty(ui->loadingLabel, "text", tr("Sending playlist..."));
+    sendPlaylistState->assignProperty(ui->changePlaylistButton, "visible", true);
 
     getTopTracksState->assignProperty(this, "state", GetTopTracks);
     getTopTracksState->assignProperty(ui->loadingLabel, "text", tr("Get top tracks..."));
     getTopTracksState->assignProperty(ui->nextButton, "enabled", false);
+    getTopTracksState->assignProperty(ui->changePlaylistButton, "visible", true);
 
     partyState->assignProperty(ui->stackedWidget, "currentIndex", ui->stackedWidget->indexOf(ui->playerPage));
+    partyState->assignProperty(ui->changePlaylistButton, "visible", true);
 
     sendCurrentTrackState->assignProperty(this, "state", SendCurrentTrack);
     sendCurrentTrackState->assignProperty(ui->nextButton, "enabled", false);
@@ -170,6 +183,7 @@ SmoozikSimplestClientWindow::SmoozikSimplestClientWindow(QWidget *parent) :
     connect(ui->passwordLineEdit, SIGNAL(returnPressed()), this, SLOT(submitLogin()));
     connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(submitLogin()));
     connect(ui->nextButton, SIGNAL(clicked()), this, SLOT(nextTrack()));
+    connect(ui->disconnectButton, SIGNAL(clicked()), this, SLOT(disconnect()));
 
     // Start state machine
     mainStateMachine->start();
@@ -187,58 +201,71 @@ SmoozikSimplestClientWindow::~SmoozikSimplestClientWindow()
     delete ui;
 }
 
-int SmoozikSimplestClientWindow::getCurrentTrackIndex()
+void SmoozikSimplestClientWindow::getCurrentTrackInfo(QString *localId, QString *name, QString *artist, QString *album)
 {
+    *localId = QString();
+    *name = QString();
+    *artist = QString();
+    *album = QString();
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    return smoozikPlaylist->indexOf(player->currentSource().url().toLocalFile());
+    *localId = player->currentSource().url().toLocalFile();
 #else
-    return smoozikPlaylist->indexOf(player->currentMedia().canonicalUrl().toLocalFile());
+    *localId = player->currentMedia().canonicalUrl().toLocalFile();
 #endif
-}
-
-int SmoozikSimplestClientWindow::getNextTrackIndex()
-{
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    if (!player->queue().isEmpty()) {
-        return smoozikPlaylist->indexOf(player->queue().at(0).url().toLocalFile());
-#else
-    if (player->playlist()->currentIndex() >= 0 && player->playlist()->mediaCount() > player->playlist()->currentIndex() + 1) {
-        return smoozikPlaylist->indexOf(player->playlist()->media(player->playlist()->currentIndex() + 1).canonicalUrl().toLocalFile());
-#endif
-    } else {
-        return -1;
+    TagLib::FileRef mediaFileRef(QFile::encodeName(*localId).constData());
+    if (!mediaFileRef.isNull()) {
+        *name = TStringToQString(mediaFileRef.tag()->title());
+        *artist = TStringToQString(mediaFileRef.tag()->artist());
+        *album = TStringToQString(mediaFileRef.tag()->album());
     }
 }
 
+void SmoozikSimplestClientWindow::getNextTrackInfo(QString *localId, QString *name, QString *artist, QString *album)
+{
+    *localId = QString();
+    *name = QString();
+    *artist = QString();
+    *album = QString();
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    if (!player->queue().isEmpty()) {
+        *localId = player->queue().at(0).url().toLocalFile();
+#else
+    if (player->playlist()->currentIndex() >= 0 && player->playlist()->mediaCount() > player->playlist()->currentIndex() + 1) {
+        *localId = player->playlist()->media(player->playlist()->currentIndex() + 1).canonicalUrl().toLocalFile();
+#endif
+        TagLib::FileRef mediaFileRef(QFile::encodeName(*localId).constData());
+        if (!mediaFileRef.isNull()) {
+            *name = TStringToQString(mediaFileRef.tag()->title());
+            *artist = TStringToQString(mediaFileRef.tag()->artist());
+            *album = TStringToQString(mediaFileRef.tag()->album());
+        }
+    }
+}
 
 void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
 {
+    QString path = reply->url().path();
     SmoozikXml xml(reply);
     if (xml.error() != 0) {
-        loginError(xml.errorMsg());
+        error(xml.errorMsg());
     } else {
 
         // Process different cases of request
-        switch(state()) {
-
-        case Login : {
+        if (path.endsWith("login", Qt::CaseInsensitive) && state() == Login) {
             //Retrieve sessionKey
             smoozikManager->setSessionKey(xml["sessionKey"].toString());
             emit loggedIn();
-            break;
         }
 
-        case StartParty : {
+        else if (path.endsWith("startParty", Qt::CaseInsensitive) && state() == StartParty) {
             emit partyStarted();
-            break;
         }
 
-        case SendPlaylist : {
+        else if (path.endsWith("sendPlaylist", Qt::CaseInsensitive) && state() == SendPlaylist) {
             emit playlistSent();
-            break;
         }
 
-        case GetTopTracks : {
+        else if (path.endsWith("getTopTracks", Qt::CaseInsensitive) && state() == GetTopTracks) {
 
             // Set mediaPlaylist from top tracks.
             SmoozikPlaylist topTracksPlaylist(xml["tracks"].toList());
@@ -265,21 +292,14 @@ void SmoozikSimplestClientWindow::processNetworkReply(QNetworkReply *reply)
                 }
             }
 #endif
-            break;
         }
 
-        case SendCurrentTrack : {
+        else if (path.endsWith("setTrack", Qt::CaseInsensitive) && state() == SendCurrentTrack) {
             emit currentTrackSent();
-            break;
         }
 
-        case SendNextTrack : {
+        else if (path.endsWith("setTrack", Qt::CaseInsensitive) && state() == SendNextTrack) {
             emit nextTrackSent();
-            break;
-        }
-
-        default :
-            loginError(tr("Unkown state encountered."));
         }
     }
 }
@@ -296,9 +316,22 @@ void SmoozikSimplestClientWindow::submitLogin()
     smoozikManager->login(username, password);
 }
 
-void SmoozikSimplestClientWindow::loginError(QString errorMsg)
+void SmoozikSimplestClientWindow::disconnect()
 {
-    emit disconnect();
+    smoozikManager->setSessionKey(QString());
+    smoozikPlaylist->clear();
+    player->stop();
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    player->clearQueue();
+#else
+    player->playlist()->clear();
+#endif
+    emit disconnected();
+}
+
+void SmoozikSimplestClientWindow::error(QString errorMsg)
+{
+    disconnect();
     ui->loginButton->setEnabled(true);
     ui->usernameLineEdit->setEnabled(true);
     ui->passwordLineEdit->setEnabled(true);
@@ -316,37 +349,32 @@ void SmoozikSimplestClientWindow::sendCurrentTrack()
         player->play();
     }
 
-    int currentTrackIndex = getCurrentTrackIndex();
-    if (currentTrackIndex >= 0 && currentTrackIndex < smoozikPlaylist->count()) {
-        SmoozikTrack *currentTrack = smoozikPlaylist->value(currentTrackIndex);
-
-        if (currentTrack->localId().isEmpty()) {
-            loginError("Current track could not be found in playlist.");
-            return;
-        }
-
-        smoozikManager->setTrack(currentTrack, 0);
+    QString localId, name, artist, album;
+    getCurrentTrackInfo(&localId, &name, &artist, &album);
+    if (!localId.isEmpty() && !name.isEmpty()) {
+        smoozikManager->setTrack(localId, name, artist, album, 0, 0);
     }
 }
 
 void SmoozikSimplestClientWindow::sendNextTrack()
 {
-    int nextTrackIndex = getNextTrackIndex();
-    if (nextTrackIndex >= 0 && nextTrackIndex < smoozikPlaylist->count()) {
-        SmoozikTrack *nextTrack = smoozikPlaylist->value(nextTrackIndex);
-
-        if (nextTrack->localId().isEmpty()) {
-            loginError("Next track could not be found in playlist.");
-            return;
-        }
-
-        smoozikManager->setTrack(nextTrack, 1);
+    QString localId, name, artist, album;
+    getNextTrackInfo(&localId, &name, &artist, &album);
+    if (!localId.isEmpty() && !name.isEmpty()) {
+        smoozikManager->setTrack(localId, name, artist, album, 0, 1);
     }
 }
 
 void SmoozikSimplestClientWindow::retrieveTracksDialog()
 {
     smoozikPlaylist->clear();
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    player->clearQueue();
+#else
+    for (int i = player->playlist()->currentIndex() + 1; i < player->playlist()->mediaCount();  i++) {
+        player->playlist()->removeMedia(player->playlist()->currentIndex() + 1);
+    }
+#endif
     QDir directory(_dirName);
 
     QFileDialog dialog(0, tr("Select folder"), directory.path(), "Directories");
@@ -363,27 +391,18 @@ void SmoozikSimplestClientWindow::retrieveTracksDialog()
         smoozikPlaylistFillerThread->start();
 
     } else {
-        emit disconnect();
+        disconnect();
     }
 }
 
 void SmoozikSimplestClientWindow::updateTrackLabels()
 {
-    int currentTrackIndex = getCurrentTrackIndex();
-    if (currentTrackIndex >= 0 && currentTrackIndex < smoozikPlaylist->count()) {
-        SmoozikTrack *currentTrack = smoozikPlaylist->value(currentTrackIndex);
-        ui->currentTrackLabel->setText(QString("%1 - %2").arg(currentTrack->name()).arg(currentTrack->artist()));
-    } else {
-        ui->currentTrackLabel->setText(QString(" - "));
-    }
+    QString localId, name, artist, album;
+    getCurrentTrackInfo(&localId, &name, &artist, &album);
+    ui->currentTrackLabel->setText(QString("%1 - %2").arg(name).arg(artist));
 
-    int nextTrackIndex = getNextTrackIndex();
-    if (nextTrackIndex >= 0 && nextTrackIndex < smoozikPlaylist->count()) {
-        SmoozikTrack *nextTrack = smoozikPlaylist->value(nextTrackIndex);
-        ui->nextTrackLabel->setText(QString("%1 - %2").arg(nextTrack->name()).arg(nextTrack->artist()));
-    } else {
-        ui->nextTrackLabel->setText(QString(" - "));
-    }
+    getNextTrackInfo(&localId, &name, &artist, &album);
+    ui->nextTrackLabel->setText(QString("%1 - %2").arg(name).arg(artist));
 }
 
 void SmoozikSimplestClientWindow::playerStateChanged()
