@@ -46,7 +46,7 @@ int SmoozikPlaylistFiller::addTracksToPlaylist(const QDir *directory)
         }
 
         if (fileName != ".." && fileName != ".") {
-            QString fullPathFileName = directory->filePath(fileName);
+            QString fullPathFileName = directory->absoluteFilePath(fileName);
 
             QFileInfo fileInfo(fullPathFileName);
 
@@ -74,13 +74,12 @@ int SmoozikPlaylistFiller::addTracksToPlaylist(const QDir *directory)
                     if (name != QString()) {
                         emit trackFound(fullPathFileName, name, artist, album);
 
+                        res ++;
                         if (res >= MAX_ADVISED_PLAYLIST_SIZE) {
 
                             emit maxPlaylistSizeReached();
                             break;
                         }
-
-                        res ++;
                     }
                 }
             }

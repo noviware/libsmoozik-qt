@@ -88,3 +88,14 @@ int SmoozikPlaylist::indexOf(const QString &localId) const
     }
     return -1;
 }
+
+int SmoozikPlaylist::indexByFileName(const QString &fileName) const
+{
+    int listCount = count();
+    for (int i = 0; i < listCount; i++) {
+        if (value(i)->fileName() == fileName) {
+            return i;
+        }
+    }
+    return -1;
+}

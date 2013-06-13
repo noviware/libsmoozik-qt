@@ -65,10 +65,18 @@ class SmoozikTrack : public QObject
      * @pm _duration
      */
     Q_PROPERTY(uint duration READ duration)
+    /**
+     * @brief This property holds the name of the file corresponding to the track.
+     *
+     * This property is used locally and is never sent to the server. It can be useful to retrieve a path from a localId and vice versa.
+     * @af duration()
+     * @pm _duration
+     */
+    Q_PROPERTY(QString fileName READ fileName)
     Q_OBJECT
 
 public:
-    SMOOZIKLIB_EXPORT explicit SmoozikTrack(const QString &localId, const QString &name, QObject *parent = 0, const QString &artist = QString(), const QString &album = QString(), uint duration = 0);
+    SMOOZIKLIB_EXPORT explicit SmoozikTrack(const QString &localId, const QString &name, QObject *parent = 0, const QString &artist = QString(), const QString &album = QString(), uint duration = 0, const QString &fileName = QString());
     /**
      * @brief Constructs a SmoozikTrack and fills its properties with data from DomDocument @em doc.
      * @param doc DomDocument containing a list of track properties
@@ -106,12 +114,17 @@ public:
         return _duration;
     } /**< see #duration */
 
+    inline QString fileName() const {
+        return _fileName;
+    } /**< see #fileName */
+
 private:
     QString _localId; /**< see #localId */
     QString _name; /**< see #name */
     QString _artist; /**< see #artist */
     QString _album; /**< see #album */
     uint _duration; /**< see #duration */
+    QString _fileName; /**< see #fileName */
     /**
      * @brief Sets track properties with data from QVariantMap @em map.
      * @param map QVariantMap containing a list of track properties

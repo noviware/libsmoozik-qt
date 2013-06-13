@@ -21,7 +21,7 @@
 #include "smooziktrack.h"
 #include "smoozikxml.h"
 
-SmoozikTrack::SmoozikTrack(const QString &localId, const QString &name, QObject *parent, const QString &artist, const QString &album, uint duration) :
+SmoozikTrack::SmoozikTrack(const QString &localId, const QString &name, QObject *parent, const QString &artist, const QString &album, uint duration, const QString &fileName) :
     QObject(parent)
 {
     _localId = localId;
@@ -29,6 +29,7 @@ SmoozikTrack::SmoozikTrack(const QString &localId, const QString &name, QObject 
     _artist = artist;
     _album = album;
     _duration = duration;
+    _fileName = fileName;
 }
 
 SmoozikTrack::SmoozikTrack(const QDomDocument &doc, QObject *parent) :
@@ -55,4 +56,5 @@ void SmoozikTrack::setPropertiesFromMap(const QVariantMap &map)
     (map.contains("artist")) ? _artist = map["artist"].toString() : _artist = QString();
     (map.contains("album")) ? _album = map["album"].toString() : _album = QString();
     (map.contains("duration")) ? _duration = map["duration"].toString().toInt() : _duration = 0;
+    (map.contains("fileName")) ? _fileName = map["fileName"].toString() : _fileName = QString();
 }

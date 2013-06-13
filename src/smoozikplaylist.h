@@ -77,8 +77,8 @@ public:
      * @param album Album name of the track
      * @param duration Duration of the track
      */
-    inline void addTrack(QString localId, QString name, QString artist = QString(), QString album = QString(), uint duration = 0) {
-        addTrack(new SmoozikTrack(localId, name, this, artist, album, duration));
+    inline void addTrack(const QString &localId, const QString &name, const QString &artist = QString(), const QString &album = QString(), uint duration = 0, const QString &fileName = QString()) {
+        addTrack(new SmoozikTrack(localId, name, this, artist, album, duration, fileName));
     }
 
     /**
@@ -99,9 +99,14 @@ public:
     SMOOZIKLIB_EXPORT bool contains(const QString &localId) const;
 
     /**
-     * @brief Returns the index position of the first occurrence of track with @em localId in the playlist, searching forward from index position from. Returns -1 if no item matched.
+     * @brief Returns the index position of the first occurrence of track with @em localId in the playlist. Returns -1 if no item matched.
      */
     SMOOZIKLIB_EXPORT int indexOf(const QString &localId) const;
+
+    /**
+     * @brief Returns the index position of the first occurrence of track with @em fileName in the playlist. Returns -1 if no item matched.
+     */
+    SMOOZIKLIB_EXPORT int indexByFileName(const QString &fileName) const;
 
     /**
      * @brief Clear playlist and deletes all playlist tracks.
