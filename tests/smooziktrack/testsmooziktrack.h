@@ -28,6 +28,7 @@ class TestSmoozikTrack : public QObject
 {
     Q_OBJECT
 private slots:
+    void constructors_data();
     void constructors();
 };
 

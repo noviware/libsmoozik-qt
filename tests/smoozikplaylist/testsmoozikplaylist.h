@@ -34,6 +34,7 @@ private slots:
     void qListAggregation();
     void deleteTracks();
     void childrenDeletion();
+    void indexByFileName();
 };
 
 #endif // TESTSMOOZIKPLAYLIST_H

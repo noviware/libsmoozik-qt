@@ -23,10 +23,16 @@
 
 #include <QtTest>
 #include "config.h"
+#include "smoozikmanager.h"
 
 class TestSmoozikManager : public QObject
 {
     Q_OBJECT
+
+protected slots:
+    QNetworkReply *startParty(SmoozikManager *manager);
+    void set5Tracks(SmoozikManager *manager);
+
 private slots:
     void constructors();
     void format();

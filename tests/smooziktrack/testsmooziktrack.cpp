@@ -22,46 +22,62 @@
 #include "smooziktrack.h"
 #include "smoozikxml.h"
 
+void TestSmoozikTrack::constructors_data()
+{
+    QTest::addColumn<QString>("xmlString");
+    QTest::addColumn<QString>("localId");
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<QString>("artist");
+    QTest::addColumn<QString>("album");
+    QTest::addColumn<uint>("duration");
+    QTest::addColumn<QString>("fileName");
+
+    QTest::newRow("Empty xml") << QString() << QString() << QString() << QString() << QString() << (uint)0 << QString();
+    QTest::newRow("Minimal required properties") << "<track><localId>id</localId><name>track</name></track>" << "id" << "track" << QString() << QString() << (uint)0  << QString();
+    QTest::newRow("No fileName") << "<track><localId>id</localId><name>track</name><album>album</album><artist>artist</artist><duration>220</duration></track>" << "id" << "track"<< "artist" << "album"  << (uint)220 << QString();
+    QTest::newRow("All properties") << "<track><localId>id</localId><name>track</name><album>album</album><artist>artist</artist><duration>220</duration><fileName>fileName</fileName></track>" << "id" << "track" << "artist" << "album" << (uint)220 << "fileName";
+}
+
 void TestSmoozikTrack::constructors()
 {
-    QString str = "<track><localId>1</localId><name>track1</name></track>";
+    QFETCH(QString, xmlString);
+    QFETCH(QString, localId);
+    QFETCH(QString, name);
+    QFETCH(QString, album);
+    QFETCH(QString, artist);
+    QFETCH(uint, duration);
+    QFETCH(QString, fileName);
+
     QDomDocument doc;
-    doc.setContent(str);
+    QVariant variant;
+    if(!xmlString.isEmpty()) {
+        doc.setContent(xmlString);
+        variant = SmoozikXml::parseElement(doc.firstChildElement());
+    }
 
     SmoozikTrack track(doc);
-    QCOMPARE(track.localId(), QString("1"));
-    QCOMPARE(track.name(), QString("track1"));
-    QCOMPARE(track.album().isEmpty(), true);
-    QCOMPARE(track.artist().isEmpty(), true);
-    QCOMPARE(track.duration(), (uint) 0);
-
-    QString str2 = "<track><localId>2</localId><name>track2</name><album>album2</album><artist>artist2</artist><duration>220</duration></track>";
-    QDomDocument doc2;
-    doc2.setContent(str2);
-    QVariant variant = SmoozikXml::parseElement(doc2.firstChildElement());
+    QCOMPARE(track.localId(), localId);
+    QCOMPARE(track.name(), name);
+    QCOMPARE(track.album(), album);
+    QCOMPARE(track.artist(), artist);
+    QCOMPARE(track.duration(), duration);
+    QCOMPARE(track.fileName(), fileName);
 
     SmoozikTrack track2(variant.toMap());
-    QCOMPARE(track2.localId(), QString("2"));
-    QCOMPARE(track2.name(), QString("track2"));
-    QCOMPARE(track2.album(), QString("album2"));
-    QCOMPARE(track2.artist(), QString("artist2"));
-    QCOMPARE(track2.duration(), (uint) 220);
+    QCOMPARE(track2.localId(), localId);
+    QCOMPARE(track2.name(), name);
+    QCOMPARE(track2.album(), album);
+    QCOMPARE(track2.artist(), artist);
+    QCOMPARE(track2.duration(), duration);
+    QCOMPARE(track2.fileName(), fileName);
 
-    QDomDocument emptyDoc;
-    SmoozikTrack track3(emptyDoc);
-    QCOMPARE(track3.localId().isEmpty(), true);
-    QCOMPARE(track3.name().isEmpty(), true);
-    QCOMPARE(track3.album().isEmpty(), true);
-    QCOMPARE(track3.artist().isEmpty(), true);
-    QCOMPARE(track3.duration(), (uint) 0);
-
-    QVariantMap emptyMap;
-    SmoozikTrack track4(emptyMap);
-    QCOMPARE(track4.localId().isEmpty(), true);
-    QCOMPARE(track4.name().isEmpty(), true);
-    QCOMPARE(track4.album().isEmpty(), true);
-    QCOMPARE(track4.artist().isEmpty(), true);
-    QCOMPARE(track4.duration(), (uint) 0);
+    SmoozikTrack track3(localId, name, 0, artist, album, duration, fileName);
+    QCOMPARE(track3.localId(), localId);
+    QCOMPARE(track3.name(), name);
+    QCOMPARE(track3.album(), album);
+    QCOMPARE(track3.artist(), artist);
+    QCOMPARE(track3.duration(), duration);
+    QCOMPARE(track3.fileName(), fileName);
 }
 
 QTEST_XML_MAIN(TestSmoozikTrack)

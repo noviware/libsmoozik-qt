@@ -132,6 +132,7 @@ void TestSmoozikPlaylist::qListAggregation()
     QCOMPARE(playlist.contains("2"), true);
     QCOMPARE(playlist.contains("A"), false);
     QCOMPARE(playlist.indexOf("2"), 1);
+    QCOMPARE(playlist.indexOf("error"), -1);
     QCOMPARE(playlist.count(), 9);
     QCOMPARE(playlist.size(), 9);
     QCOMPARE(playlist.first()->localId(), track1->localId());
@@ -156,19 +157,19 @@ void TestSmoozikPlaylist::qListAggregation()
 
 void TestSmoozikPlaylist::deleteTracks()
 {
-    SmoozikPlaylist *playlist = new SmoozikPlaylist(this);
-    playlist->addTrack("1", "track1", "artist1", "album1", 220);
-    SmoozikTrack *track1 = playlist->first();
-    SmoozikTrack *track2 = new SmoozikTrack("2", "track2", playlist, "artist2");
-    playlist->addTrack(track2);
+    SmoozikPlaylist playlist;
+    playlist.addTrack("1", "track1", "artist1", "album1", 220);
+    SmoozikTrack *track1 = playlist.first();
+    SmoozikTrack *track2 = new SmoozikTrack("2", "track2", &playlist, "artist2");
+    playlist.addTrack(track2);
     SmoozikTrack *track3 = new SmoozikTrack("3", "track3", this, "artist3");
-    playlist->addTrack(track3);
+    playlist.addTrack(track3);
 
     QSignalSpy spy1(track1, SIGNAL(destroyed()));
     QSignalSpy spy2(track2, SIGNAL(destroyed()));
     QSignalSpy spy3(track3, SIGNAL(destroyed()));
 
-    playlist->deleteTracks();
+    playlist.deleteTracks();
 
     QCOMPARE(spy1.count(), 1);
     QCOMPARE(spy2.count(), 1);
@@ -193,8 +194,17 @@ void TestSmoozikPlaylist::childrenDeletion()
 
     QCOMPARE(spy1.count(), 1);
     QCOMPARE(spy2.count(), 1);
-    // Track 3 should not be deleted as it has been outside playlist and has different parent
+    // Track 3 should not be deleted as it has been created outside playlist and has different parent
     QCOMPARE(spy3.count(), 0);
+}
+
+void TestSmoozikPlaylist::indexByFileName()
+{
+    SmoozikPlaylist playlist;
+    playlist.addTrack("1", "track", "artist", "album", 220, "fileName");
+
+    QCOMPARE(playlist.indexByFileName("fileName"), 0);
+    QCOMPARE(playlist.indexByFileName("error"), -1);
 }
 
 QTEST_XML_MAIN(TestSmoozikPlaylist)
