@@ -99,3 +99,9 @@ int SmoozikPlaylist::indexByFileName(const QString &fileName) const
     }
     return -1;
 }
+
+SmoozikTrack *SmoozikPlaylist::random() const
+{
+    qsrand((uint)QTime::currentTime().msec());
+    return value(qrand() % size());
+}

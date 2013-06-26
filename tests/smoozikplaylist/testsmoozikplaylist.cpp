@@ -207,4 +207,15 @@ void TestSmoozikPlaylist::indexByFileName()
     QCOMPARE(playlist.indexByFileName("error"), -1);
 }
 
+void TestSmoozikPlaylist::random()
+{
+    SmoozikPlaylist playlist;
+    playlist.addTrack("1", "track1");
+    playlist.addTrack("2", "track2");
+    playlist.addTrack("3", "track3");
+    QString localId = playlist.random()->localId();
+    QCOMPARE(localId.isEmpty(), false);
+    QTRY_COMPARE(localId == playlist.random()->localId(), true);
+}
+
 QTEST_XML_MAIN(TestSmoozikPlaylist)

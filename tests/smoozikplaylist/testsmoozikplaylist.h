@@ -35,6 +35,7 @@ private slots:
     void deleteTracks();
     void childrenDeletion();
     void indexByFileName();
+    void random();
 };
 
 #endif // TESTSMOOZIKPLAYLIST_H
