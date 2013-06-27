@@ -30,7 +30,7 @@
 /**
  * @brief The SmoozikTrack class represents a track.
  */
-class SmoozikTrack : public QObject
+class SMOOZIKLIB_EXPORT SmoozikTrack : public QObject
 {
     /**
      * @brief This property holds the local unique Id of the track.
@@ -76,23 +76,23 @@ class SmoozikTrack : public QObject
     Q_OBJECT
 
 public:
-    SMOOZIKLIB_EXPORT explicit SmoozikTrack(const QString &localId, const QString &name, QObject *parent = 0, const QString &artist = QString(), const QString &album = QString(), uint duration = 0, const QString &fileName = QString());
+    explicit SmoozikTrack(const QString &localId, const QString &name, QObject *parent = 0, const QString &artist = QString(), const QString &album = QString(), uint duration = 0, const QString &fileName = QString());
     /**
      * @brief Constructs a SmoozikTrack and fills its properties with data from DomDocument @em doc.
      * @param doc DomDocument containing a list of track properties
      * @param parent
      * @return
      */
-    SMOOZIKLIB_EXPORT explicit SmoozikTrack(const QDomDocument &doc, QObject *parent = 0);
+    explicit SmoozikTrack(const QDomDocument &doc, QObject *parent = 0);
     /**
      * @brief Constructs a SmoozikTrack and fills its properties with data from QVariantMap @em map.
      * @param map QVariantMap containing a list of track properties
      * @param parent
      * @return
      */
-    SMOOZIKLIB_EXPORT explicit SmoozikTrack(const QVariantMap &map, QObject *parent = 0);
+    explicit SmoozikTrack(const QVariantMap &map, QObject *parent = 0);
 
-    SMOOZIKLIB_EXPORT ~SmoozikTrack();
+    ~SmoozikTrack();
 
     inline QString localId() const {
         return _localId;

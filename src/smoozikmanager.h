@@ -43,7 +43,7 @@
 /**
  * @brief The SmoozikManager class is a Network Access Manager designed to send request to Smoozik server.
  */
-class SmoozikManager : public QNetworkAccessManager
+class SMOOZIKLIB_EXPORT SmoozikManager : public QNetworkAccessManager
 {
 
     Q_OBJECT
@@ -129,9 +129,9 @@ public:
         SubscriptionOver = 19, /**< Your subscription is over */
         CannotParseSentData = 20 /**< Cannot parse sent data */
     };
-    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const Format &format = XML, bool blocking = true, QObject *parent = 0);
-    SMOOZIKLIB_EXPORT explicit SmoozikManager(const QString &apiKey, const QString &secret, const Format &format = XML, bool blocking = true, QObject *parent = 0);
-    SMOOZIKLIB_EXPORT ~SmoozikManager();
+    explicit SmoozikManager(const QString &apiKey, const Format &format = XML, bool blocking = true, QObject *parent = 0);
+    explicit SmoozikManager(const QString &apiKey, const QString &secret, const Format &format = XML, bool blocking = true, QObject *parent = 0);
+    ~SmoozikManager();
 
     inline QString apiKey() const {
         return _apiKey;
@@ -182,7 +182,7 @@ public:
      *
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *login(const QString &username, const QString &password);
+    QNetworkReply *login(const QString &username, const QString &password);
 
     /**
      * @brief Starts a party.
@@ -190,7 +190,7 @@ public:
      * Current and coming tracks are unset during the method.
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *startParty();
+    QNetworkReply *startParty();
 
     /**
      * @brief Retrieves top tracks for the party.
@@ -198,7 +198,7 @@ public:
      * @param retrieved Offset
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *getTopTracks(int retrieve = 10, int retrieved = 0);
+    QNetworkReply *getTopTracks(int retrieve = 10, int retrieved = 0);
 
     /**
      * @brief Sets a track for the party.
@@ -223,7 +223,7 @@ public:
      * @param duration Duraiton of the track
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *setTrack(const QString &localId, const QString &name, const QString &artistName = QString(), const QString &albumName = QString(), uint duration = 0, int position = 0);
+    QNetworkReply *setTrack(const QString &localId, const QString &name, const QString &artistName = QString(), const QString &albumName = QString(), uint duration = 0, int position = 0);
 
     /**
      * @brief Unsets this track as currently playing or coming for the party.
@@ -243,7 +243,7 @@ public:
      * @param localId Id of the track to unset
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *unsetTrack(const QString &localId);
+    QNetworkReply *unsetTrack(const QString &localId);
 
     /**
      * @brief Unsets all tracks which are currently playing or coming for the party.
@@ -251,14 +251,14 @@ public:
      * If a track has been set as current or coming with setTrack(), this function can be used to unset it.
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *unsetAllTracks();
+    QNetworkReply *unsetAllTracks();
 
     /**
      * @brief Sends the playlist.
      * @param playlist Playlist to send
      * @rights Managers only
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *sendPlaylist(const SmoozikPlaylist *playlist);
+    QNetworkReply *sendPlaylist(const SmoozikPlaylist *playlist);
     //@}
 
     /**
@@ -268,7 +268,7 @@ public:
      * @param postParams Parameters sent through POST method
      * @return Reply of the server
      */
-    SMOOZIKLIB_EXPORT QNetworkReply *request(const QString &method, QMap<QString, QString> getParams = QMap<QString, QString>(), QMap<QString, QString> postParams = QMap<QString, QString>());
+    QNetworkReply *request(const QString &method, QMap<QString, QString> getParams = QMap<QString, QString>(), QMap<QString, QString> postParams = QMap<QString, QString>());
 
 private:
     QString _apiKey; /**< @see #apiKey */

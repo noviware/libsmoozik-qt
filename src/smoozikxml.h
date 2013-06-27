@@ -29,7 +29,7 @@
 /**
  * @brief The SmoozikXml class provides with functions to parse XML response from Smoozik webserver
  */
-class SmoozikXml : public QObject
+class SMOOZIKLIB_EXPORT SmoozikXml : public QObject
 {
     /**
      * @brief This property holds the error encountered in last parse() call.
@@ -50,14 +50,14 @@ class SmoozikXml : public QObject
     Q_OBJECT
 
 public:
-    SMOOZIKLIB_EXPORT explicit SmoozikXml(QObject *parent = 0);
+    explicit SmoozikXml(QObject *parent = 0);
     /**
      * @brief Constructs a SmoozikXml and parses the reply.
      * @sa parse()
      */
-    SMOOZIKLIB_EXPORT explicit SmoozikXml(QNetworkReply *reply, QObject *parent = 0);
+    explicit SmoozikXml(QNetworkReply *reply, QObject *parent = 0);
 
-    SMOOZIKLIB_EXPORT ~SmoozikXml();
+    ~SmoozikXml();
 
     inline SmoozikManager::Error error() const {
         return _error;
@@ -71,7 +71,7 @@ public:
      * @brief Parses a QDomElement data to fill SmoozikXml QMap.
      * @param dataElement a QDomElement
      */
-    SMOOZIKLIB_EXPORT void parse(const QDomElement &dataElement);
+    void parse(const QDomElement &dataElement);
 
     /**
      * @brief Parses response from Smoozik Server.
@@ -81,14 +81,14 @@ public:
      * @retval true if parsing succeeded. Data is accessible with operator [].
      * @retval false if parsing failed. Error is accessible with error().
      */
-    SMOOZIKLIB_EXPORT bool parse(QNetworkReply *reply);
+    bool parse(QNetworkReply *reply);
 
     /**
      * @brief Parses a Dom element and returns it in a QVariant.
      *
      * This function is used recursively by parse().
      */
-    SMOOZIKLIB_EXPORT static QVariant parseElement(const QDomElement &element);
+    static QVariant parseElement(const QDomElement &element);
 
     /**
      * @brief Returns the element at @em key of #_parsed if #_parsed is a QMap.
@@ -97,7 +97,7 @@ public:
      * a QList (accessible through QVariant::toList())
      * or a QMap (accessible through QVariant::toMap()).
      */
-    SMOOZIKLIB_EXPORT QVariant operator[] (const QString &key) const;
+    QVariant operator[] (const QString &key) const;
 
     /**
      * @brief Returns the element at index position @em i of #_parsed if #_parsed is a QList.
@@ -106,7 +106,7 @@ public:
      * a QList (accessible through QVariant::toList())
      * or a QMap (accessible through QVariant::toMap()).
      */
-    SMOOZIKLIB_EXPORT QVariant operator[] (const int i) const;
+    QVariant operator[] (const int i) const;
 
     /**
      * @brief if _parsed is a QString, return this string; else returns an empty string.
@@ -131,7 +131,7 @@ public:
      * @param indentCount Indentation
      * @return A structured string
      */
-    SMOOZIKLIB_EXPORT static QString printVariant(const QVariant &variant, const int indentCount = 0);
+    static QString printVariant(const QVariant &variant, const int indentCount = 0);
 
 private:
     /**

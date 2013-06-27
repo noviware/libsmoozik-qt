@@ -38,26 +38,26 @@
 /**
  * @brief The SmoozikPlaylist class represents a collection of track
  */
-class SmoozikPlaylist : public QObject
+class SMOOZIKLIB_EXPORT SmoozikPlaylist : public QObject
 {
     Q_OBJECT
 
 public:
-    SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(QObject *parent = 0);
+    explicit SmoozikPlaylist(QObject *parent = 0);
     /**
      * @brief Constructs a SmoozikPlaylist and fills it with data from DomDocument @em doc.
      * @param doc DomDocument containing a list of \<track\> elements
      * @param parent
      */
-    SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(const QDomDocument &doc, QObject *parent = 0);
+    explicit SmoozikPlaylist(const QDomDocument &doc, QObject *parent = 0);
     /**
      * @brief Constructs a SmoozikPlaylist and fills it with data from QVariantList @em list.
      * @param list QVariantList containing a list of track elements parsed using SmoozikXml
      * @param parent
      */
-    SMOOZIKLIB_EXPORT explicit SmoozikPlaylist(const QVariantList &list, QObject *parent = 0);
+    explicit SmoozikPlaylist(const QVariantList &list, QObject *parent = 0);
 
-    SMOOZIKLIB_EXPORT ~SmoozikPlaylist();
+    ~SmoozikPlaylist();
 
     /**
      * @brief Adds a track to the playlist.
@@ -65,7 +65,7 @@ public:
      * If the playlist already has a track with this localId, the track is not added.
      * @param track
      */
-    SMOOZIKLIB_EXPORT void addTrack(SmoozikTrack *track);
+    void addTrack(SmoozikTrack *track);
 
     /**
      * @brief Adds a track to the playlist.
@@ -85,28 +85,28 @@ public:
      * @brief Adds tracks from DomDocument @em doc to the playlist.
      * @param doc DomDocument containing a list of \<track\> elements
      */
-    SMOOZIKLIB_EXPORT void addTracks(const QDomDocument &doc);
+    void addTracks(const QDomDocument &doc);
 
     /**
      * @brief Adds tracks from QVariantList @em doc to the playlist.
      * @param list QVariantList containing a list of track elements parsed using SmoozikXml
      */
-    SMOOZIKLIB_EXPORT void addTracks(const QVariantList &list);
+    void addTracks(const QVariantList &list);
 
     /**
      * @brief Returns true if the playlist contains a track with @em localId; otherwise returns false.
      */
-    SMOOZIKLIB_EXPORT bool contains(const QString &localId) const;
+    bool contains(const QString &localId) const;
 
     /**
      * @brief Returns the index position of the first occurrence of track with @em localId in the playlist. Returns -1 if no item matched.
      */
-    SMOOZIKLIB_EXPORT int indexOf(const QString &localId) const;
+    int indexOf(const QString &localId) const;
 
     /**
      * @brief Returns the index position of the first occurrence of track with @em fileName in the playlist. Returns -1 if no item matched.
      */
-    SMOOZIKLIB_EXPORT int indexByFileName(const QString &fileName) const;
+    int indexByFileName(const QString &fileName) const;
 
     /**
      * @brief Clear playlist and deletes all playlist tracks.
@@ -118,7 +118,7 @@ public:
     /**
      * @brief Returns a random track from the playlist.
      */
-    SMOOZIKLIB_EXPORT SmoozikTrack *random() const;
+    SmoozikTrack *random() const;
 
     /**
      * @name QList methods
