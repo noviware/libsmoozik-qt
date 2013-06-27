@@ -215,7 +215,10 @@ void TestSmoozikPlaylist::random()
     playlist.addTrack("3", "track3");
     QString localId = playlist.random()->localId();
     QCOMPARE(localId.isEmpty(), false);
-    QTRY_COMPARE(localId == playlist.random()->localId(), true);
+    for (int __i = 0; __i < 5000 && (localId == playlist.random()->localId() != true); __i+= 50) {
+        QTest::qWait(50);
+    }
+    QCOMPARE(localId == playlist.random()->localId(), true);
 }
 
 QTEST_XML_MAIN(TestSmoozikPlaylist)
