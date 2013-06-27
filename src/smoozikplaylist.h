@@ -118,7 +118,7 @@ public:
     /**
      * @brief Returns a random track from the playlist.
      */
-    SmoozikTrack *random() const;
+    SMOOZIKLIB_EXPORT SmoozikTrack *random() const;
 
     /**
      * @name QList methods
