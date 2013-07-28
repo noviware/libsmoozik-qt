@@ -38,6 +38,17 @@ QNetworkReply *TestSmoozikManager::startParty(SmoozikManager *manager)
     return manager->startParty();
 }
 
+QNetworkReply *TestSmoozikManager::joinParty(SmoozikManager *manager, const QString &partyId)
+{
+    SmoozikXml xml;
+    QNetworkReply *reply;
+
+    reply = manager->login(MEMBER_USERNAME, MEMBER_PASSWORD);
+    xml.parse(reply);
+    manager->setSessionKey(xml["sessionKey"].toString());
+    return manager->joinParty(partyId);
+}
+
 void TestSmoozikManager::set5Tracks(SmoozikManager *manager)
 {
 
@@ -59,7 +70,8 @@ void TestSmoozikManager::set5Tracks(SmoozikManager *manager)
     QNetworkReply *reply = manager->getTopTracks();
     SmoozikXml xml;
     QCOMPARE(xml.parse(reply), true);
-    QCOMPARE(xml["tracks"].toList().isEmpty(), true);
+    QCOMPARE(xml["tracks"].toList().isEmpty(), false);
+    QCOMPARE(xml["tracks"].toList().count(), 4);
 }
 
 void TestSmoozikManager::constructors()
@@ -143,6 +155,34 @@ void TestSmoozikManager::startParty()
     QCOMPARE(xml["party"].isNull(), false);
 }
 
+void TestSmoozikManager::joinParty()
+{
+    QNetworkReply *reply;
+    SmoozikXml xml;
+    SmoozikManager managerManager(APIKEY, SECRET, SmoozikManager::XML, true);
+    reply = startParty(&managerManager);
+    xml.parse(reply);
+    QString partyId = xml["party"].toMap()["id"].toString();
+    reply = managerManager.forceDisconnectUsers(1);
+
+    SmoozikManager memberManager(APIKEY, SECRET, SmoozikManager::XML, true);
+
+    reply = memberManager.joinParty(partyId);
+    QCOMPARE(xml.parse(reply), false);
+    QCOMPARE(xml.error(), SmoozikManager::AccessRestricted);
+
+    reply = memberManager.login(MEMBER_USERNAME, MEMBER_PASSWORD);
+    xml.parse(reply);
+    memberManager.setSessionKey(xml["sessionKey"].toString());
+
+    reply = memberManager.joinParty("error");
+    QCOMPARE(xml.parse(reply), false);
+    QCOMPARE(xml.error(), SmoozikManager::InvalidPartyId);
+
+    reply = memberManager.joinParty(partyId);
+    QCOMPARE(xml.parse(reply), true);
+}
+
 void TestSmoozikManager::sendPlaylist()
 {
     SmoozikManager manager(APIKEY, SECRET, SmoozikManager::XML, true);
@@ -194,7 +234,7 @@ void TestSmoozikManager::unsetTrack()
 
     reply = manager.getTopTracks();
     QCOMPARE(xml.parse(reply), true);
-    QCOMPARE(xml["tracks"].toList().count(), 1);
+    QCOMPARE(xml["tracks"].toList().count(), 5);
 }
 
 void TestSmoozikManager::unsetAllTracks()
@@ -243,6 +283,32 @@ void TestSmoozikManager::getTopTracks()
     SmoozikPlaylist playlist(xml["tracks"].toList());
     QCOMPARE(playlist.count(), xml["tracks"].toList().count());
     QCOMPARE(playlist.first()->localId(), xml["tracks"].toList()[0].toMap()["track"].toMap()["localId"].toString());
+}
+
+void TestSmoozikManager::forceDisconnectUsers()
+{
+    QNetworkReply *reply;
+    SmoozikXml xml;
+    SmoozikManager managerManager(APIKEY, SECRET, SmoozikManager::XML, true);
+    reply = startParty(&managerManager);
+    xml.parse(reply);
+    QString partyId = xml["party"].toMap()["id"].toString();
+    reply = managerManager.forceDisconnectUsers(1);
+
+    SmoozikManager memberManager(APIKEY, SECRET, SmoozikManager::XML, true);
+    joinParty(&memberManager, partyId);
+
+    QEventLoop loop;
+    QTimer::singleShot(10000, &loop, SLOT(quit()));
+    loop.exec();
+
+    reply = managerManager.forceDisconnectUsers();
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["disconnectedUserCount"].toString(), QString::number(0));
+
+    reply = managerManager.forceDisconnectUsers(1);
+    QCOMPARE(xml.parse(reply), true);
+    QCOMPARE(xml["disconnectedUserCount"].toString(), QString::number(1));
 }
 
 QTEST_XML_MAIN(TestSmoozikManager)

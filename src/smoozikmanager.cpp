@@ -52,6 +52,14 @@ QNetworkReply *SmoozikManager::login(const QString &username, const QString &pas
     return request("login", QMap<QString, QString>(), postParams);
 }
 
+QNetworkReply *SmoozikManager::joinParty(const QString &partyId)
+{
+    QMap<QString, QString> postParams;
+    postParams.insert("partyId", partyId);
+
+    return request("joinParty", QMap<QString, QString>(), postParams);
+}
+
 QNetworkReply *SmoozikManager::startParty()
 {
     return request("startParty");
@@ -142,6 +150,14 @@ QNetworkReply *SmoozikManager::sendPlaylist(const SmoozikPlaylist *playlist)
     postParams.insert("data", data);
 
     return request("sendPlaylist", QMap<QString, QString>(), postParams);
+}
+
+QNetworkReply *SmoozikManager::forceDisconnectUsers(int lastTouchDelay)
+{
+    QMap<QString, QString> postParams;
+    postParams.insert("lastTouchDelay", QString::number(lastTouchDelay));
+
+    return request("forceDisconnectUsers", QMap<QString, QString>(), postParams);
 }
 
 QNetworkReply *SmoozikManager::request(const QString &method, QMap<QString, QString> getParams, QMap<QString, QString> postParams)

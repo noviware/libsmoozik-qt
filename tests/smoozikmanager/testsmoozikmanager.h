@@ -31,6 +31,7 @@ class TestSmoozikManager : public QObject
 
 protected slots:
     QNetworkReply *startParty(SmoozikManager *manager);
+    QNetworkReply *joinParty(SmoozikManager *manager, const QString &partyId);
     void set5Tracks(SmoozikManager *manager);
 
 private slots:
@@ -39,11 +40,13 @@ private slots:
     void login_data();
     void login();
     void startParty();
+    void joinParty();
     void sendPlaylist();
     void setTrack();
     void unsetTrack();
     void unsetAllTracks();
     void getTopTracks();
+    void forceDisconnectUsers();
 };
 
 #endif // TESTSMOOZIKMANAGER_H

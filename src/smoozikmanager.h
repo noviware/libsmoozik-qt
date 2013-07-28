@@ -180,9 +180,16 @@ public:
     /**
      * @brief Logs user in.
      *
-     * @rights Managers only
+     * @rights Members and managers
      */
     QNetworkReply *login(const QString &username, const QString &password);
+
+    /**
+     * @brief Join a party (to be able to vote, get top tracks...)
+     *
+     * @rights Members and managers
+     */
+    QNetworkReply *joinParty(const QString &partyId);
 
     /**
      * @brief Starts a party.
@@ -259,6 +266,12 @@ public:
      * @rights Managers only
      */
     QNetworkReply *sendPlaylist(const SmoozikPlaylist *playlist);
+
+    /**
+     * @brief Forces disconnection of users which have not touched the party since more than @em lastTouchDelay seconds.
+     * @rights Managers only
+     */
+    QNetworkReply *forceDisconnectUsers(int lastTouchDelay = 60);
     //@}
 
     /**
