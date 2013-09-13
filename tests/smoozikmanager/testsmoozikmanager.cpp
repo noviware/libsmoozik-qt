@@ -51,7 +51,6 @@ QNetworkReply *TestSmoozikManager::joinParty(SmoozikManager *manager, const QStr
 
 void TestSmoozikManager::set5Tracks(SmoozikManager *manager)
 {
-
     SmoozikPlaylist playlist;
     playlist.addTrack("1", "track1", "artist1", "album1", 220);
     playlist.addTrack("2", "track2", "artist2");

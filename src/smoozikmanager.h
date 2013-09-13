@@ -281,7 +281,7 @@ public:
      * @param postParams Parameters sent through POST method
      * @return Reply of the server
      */
-    QNetworkReply *request(const QString &method, QMap<QString, QString> getParams = QMap<QString, QString>(), QMap<QString, QString> postParams = QMap<QString, QString>());
+    virtual QNetworkReply *request(const QString &method, QMap<QString, QString> getParams = QMap<QString, QString>(), QMap<QString, QString> postParams = QMap<QString, QString>());
 
 private:
     QString _apiKey; /**< @see #apiKey */
