@@ -21,7 +21,7 @@ libsmoozik-qt requires:
 
 # Using libsmoozik-qt
 
-This C++ API provides equivalent functions to methods available on http://smoozik.com?index.php/api.
+This C++ API provides equivalent functions to methods available on http://smoozik.com/index.php/api.
 
 You need an API key from http://smoozik.com to access the API.
 
